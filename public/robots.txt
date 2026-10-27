@@ -42,3 +42,7 @@ User-agent: cohere-ai
 Allow: /
 
 Sitemap: https://www.androidadcleaner.com/sitemap-index.xml
+
+# 供 AI 助手与生成式搜索引擎读取的结构化摘要（GEO）
+# 规范见 https://llmstxt.org/
+LLMs-Txt: https://www.androidadcleaner.com/llms.txt

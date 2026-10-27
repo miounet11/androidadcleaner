@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import { SITE } from '../../consts';
 import { SITE_STATS } from '../../data/models';
-import { breadcrumb, softwareApp } from '../../lib/schema';
+import { breadcrumb, faqPage, softwareApp } from '../../lib/schema';
 
 const url = `${SITE.url}/en/features`;
 
@@ -79,6 +79,35 @@ const platforms = [
   { name: 'Linux', req: 'glibc 2.31+', note: 'udev rule needed to authorize USB devices' },
   { name: 'CLI', req: 'Python 3.9+', note: 'Full functionality without a GUI' },
 ];
+
+// 与页面下方可见的 FAQ 区块一一对应。结构化数据必须与可见内容一致，
+// 只在 JSON-LD 里塞问答会被判为欺骗性标记。
+const faq = [
+  {
+    q: 'Does it require root?',
+    a: 'No. It uses the official adb debugging interface, which any Android phone exposes once developer options are enabled. The system partition is never mounted read-write.',
+  },
+  {
+    q: 'Does it uninstall system apps?',
+    a: 'No. Ad components without a user-facing toggle are suspended with pm suspend, which keeps the package installed and lets you restore it with one command. pm uninstall is never used.',
+  },
+  {
+    q: 'Will it break OTA updates or the warranty?',
+    a: 'No. Nothing outside the system partition is modified, and updates continue to work. Because the changes live in settings and package state rather than system files, they survive an update in a different form: after a major OTA, re-run detection and the recipe.',
+  },
+  {
+    q: 'Can every change be undone?',
+    a: 'Yes. Suspended packages are restored with pm unsuspend, notification channels roll back from the snapshot taken before changes, and in-app switches get their original path back.',
+  },
+  {
+    q: 'Which vendors are supported?',
+    a: 'Recipes cover Xiaomi and Redmi (HyperOS, MIUI), OPPO and OnePlus (ColorOS), vivo and iQOO (OriginOS), HONOR (MagicOS), realme (realme UI) and Huawei (HarmonyOS). Coverage per model varies; the device library lists build numbers that have been verified.',
+  },
+  {
+    q: 'Does the tool send any data anywhere?',
+    a: 'No. There is no telemetry or crash reporting. Logs are written to a local file, and you decide whether to attach them to an issue.',
+  },
+];
 ---
 
 <Base
@@ -92,6 +121,7 @@ const platforms = [
       { name: 'Home', url: SITE.url + '/en/' },
       { name: 'Features', url },
     ]),
+    faqPage(faq),
   ]}
 >
   <section class="border-b border-ink-100 bg-gradient-to-b from-brand-50/40 to-white">
@@ -231,6 +261,22 @@ const platforms = [
         </div>
         <a href="/en/download" class="btn-primary shrink-0">Download</a>
       </div>
+    </div>
+  </section>
+
+  <section class="border-t border-ink-100 bg-ink-50/50 py-16">
+    <div class="container-page max-w-3xl">
+      <h2 class="text-[26px] font-bold">Common questions</h2>
+      <dl class="mt-8 space-y-5">
+        {
+          faq.map((item) => (
+            <div class="card p-5">
+              <dt class="text-[15.5px] font-semibold text-ink-900">{item.q}</dt>
+              <dd class="mt-2 text-[14px] leading-relaxed text-ink-500">{item.a}</dd>
+            </div>
+          ))
+        }
+      </dl>
     </div>
   </section>
 </Base>

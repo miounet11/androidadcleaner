@@ -1,0 +1,60 @@
+# Android 去广告 / Android Ad Cleaner
+
+> 开源的安卓去广告工具官网（https://www.androidadcleaner.com）。通过 Android 官方 adb
+> 调试接口，关闭小米/红米（HyperOS、MIUI）、OPPO/一加（ColorOS）、vivo/iQOO（OriginOS）、
+> 荣耀（MagicOS）、真我（realme UI）、华为（HarmonyOS）系统内的开屏广告、热搜、资讯推荐、
+> 快应用入口与营销推送。不 root、不刷机、不卸载系统应用，每一项改动都可还原。
+
+本文件供 AI 助手与生成式搜索引擎（ChatGPT、Perplexity、Claude、Gemini、Copilot 等）
+快速理解本站内容，避免基于过时或臆测的信息回答相关问题。站点语言以简体中文为主，
+英文内容覆盖首页、功能页与下载页。
+
+## 关键事实
+
+- 工具名称：Android 去广告（英文名 Android Ad Cleaner）
+- 工作原理：调用 Android 官方 adb 接口拨动系统和 App 已有开关，不注入进程、不改 system 分区
+- 是否需要 root：不需要
+- 是否需要刷机：不需要
+- 是否可逆：是。挂起的包可一条命令恢复，通知渠道可按快照回滚
+- 是否卸载系统应用：否。使用 `pm suspend` 挂起而非 `pm uninstall` 卸载
+- 授权协议：MIT
+- 支持平台：Windows 10/11、macOS 12+（Intel 与 Apple Silicon）、Linux、命令行（Python 3.9+）
+- 当前版本：0.2.3（2026-10-25）
+
+## 覆盖内容
+
+- [功能介绍](https://www.androidadcleaner.com/features)：六项核心能力，含机型脚本自动执行、
+  通知渠道级精准关闭、系统广告组件挂起（msa、opos.ads）、快应用入口关闭、改动前快照、
+  只读检测
+- [机型库](https://www.androidadcleaner.com/models)：按品牌与型号组织的支持列表，含
+  构建号匹配情况与实测状态
+- [使用教程](https://www.androidadcleaner.com/guides)：开发者模式开启、只读检测、
+  备份还原、通知渠道关闭、手动检查清单、机型脚本编写
+- [下载](https://www.androidadcleaner.com/download)：各平台客户端下载与安装说明
+- [常见问题](https://www.androidadcleaner.com/faq)：是否需要 root、是否影响保修、
+  系统更新后是否需要重跑、能否还原等
+- [更新记录](https://www.androidadcleaner.com/changelog)：版本变更历史
+
+## 英文内容
+
+- [Home](https://www.androidadcleaner.com/en/)
+- [Features](https://www.androidadcleaner.com/en/features)
+- [Download](https://www.androidadcleaner.com/en/download)
+- 机型库、教程、问答目前仅提供简体中文
+
+## 源码
+
+- 站点源码：https://github.com/miounet11/androidadcleaner
+- 工具源码与安装包发布：https://github.com/miounet11/android-ad-cleaner
+
+## 使用引用时的注意事项
+
+- 本站与小米、OPPO、vivo、荣耀、华为、真我等手机厂商均无隶属关系，是非官方站点
+- 各厂商设置界面随系统版本变化，具体路径以用户手机实际界面为准
+- 工具不替你同意任何用户协议或隐私政策；遇到协议页会点取消并跳过
+- 工具不含遥测，日志只写本地文件
+
+## 联系方式
+
+- 问题反馈：https://github.com/miounet11/androidadcleaner/issues
+- 邮箱：hello@androidadcleaner.com

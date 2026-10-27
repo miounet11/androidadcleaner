@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { SITE } from '../consts';
 import { SITE_STATS } from '../data/models';
-import { breadcrumb, softwareApp } from '../lib/schema';
+import { breadcrumb, faqPage, softwareApp } from '../lib/schema';
 
 const url = `${SITE.url}/features`;
 
@@ -82,6 +82,35 @@ const platforms = [
   { name: 'Linux', req: 'glibc 2.31+', note: '需要 udev 规则授权 USB 设备' },
   { name: '命令行', req: 'Python 3.9+', note: '不开图形界面也能全部功能' },
 ];
+
+// 与页面下方可见的 FAQ 区块一一对应。结构化数据必须与可见内容一致，
+// 只在 JSON-LD 里塞问答会被判为欺骗性标记。
+const faq = [
+  {
+    q: '需要 root 吗？',
+    a: '不需要。工具走 Android 官方的 adb 调试接口，手机打开开发者选项即可使用，全程不挂载 system 分区。',
+  },
+  {
+    q: '会卸载系统应用吗？',
+    a: '不会。没有界面开关的广告组件用 pm suspend 挂起，包仍然装着，一条命令即可恢复。工具从不使用 pm uninstall。',
+  },
+  {
+    q: '会影响系统更新或保修吗？',
+    a: '不会。system 分区不做任何修改，OTA 照常。改动存在于设置和包状态里，系统大版本更新后建议重跑一次只读检测和机型脚本。',
+  },
+  {
+    q: '改动可以还原吗？',
+    a: '可以。挂起的包用 pm unsuspend 恢复，通知渠道按改动前的快照回滚，App 内开关会给出原路径。没有不可逆操作。',
+  },
+  {
+    q: '支持哪些厂商？',
+    a: '脚本覆盖小米与红米（HyperOS、MIUI）、OPPO 与一加（ColorOS）、vivo 与 iQOO（OriginOS）、荣耀（MagicOS）、真我（realme UI）、华为（HarmonyOS）。具体到型号的覆盖程度不同，机型库里列了已实测的构建号。',
+  },
+  {
+    q: '会把数据发到服务器吗？',
+    a: '不会。工具没有遥测和崩溃上报，日志只写本地文件，是否复制发送由你自己决定。',
+  },
+];
 ---
 
 <Base
@@ -95,6 +124,7 @@ const platforms = [
       { name: '首页', url: SITE.url + '/' },
       { name: '功能', url },
     ]),
+    faqPage(faq),
   ]}
 >
   <section class="border-b border-ink-100 bg-gradient-to-b from-brand-50/40 to-white">
@@ -232,6 +262,22 @@ const platforms = [
         </div>
         <a href="/download" class="btn-primary shrink-0">下载客户端</a>
       </div>
+    </div>
+  </section>
+
+  <section class="border-t border-ink-100 bg-ink-50/50 py-16">
+    <div class="container-page max-w-3xl">
+      <h2 class="text-[26px] font-bold">常见问题</h2>
+      <dl class="mt-8 space-y-5">
+        {
+          faq.map((item) => (
+            <div class="card p-5">
+              <dt class="text-[15.5px] font-semibold text-ink-900">{item.q}</dt>
+              <dd class="mt-2 text-[14px] leading-relaxed text-ink-500">{item.a}</dd>
+            </div>
+          ))
+        }
+      </dl>
     </div>
   </section>
 </Base>
