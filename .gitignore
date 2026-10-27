@@ -12,9 +12,10 @@ npm-debug.log*
 .env
 .env.*
 
-# 编辑器
+# 编辑器与本地工具配置
 .vscode/
 .idea/
+.cursor/
 
 # 质量门禁基线：这是需要随仓库演进的文件，不能忽略
 !patrol-baseline.json
