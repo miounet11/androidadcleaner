@@ -2,6 +2,7 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Seo from '../components/Seo.astro';
+import { LOCALE_META, localeFromPath } from '../i18n/config';
 import '../styles/global.css';
 
 export interface Props {
@@ -13,13 +14,18 @@ export interface Props {
   type?: 'website' | 'article' | 'product';
   noindex?: boolean;
   modifiedTime?: string;
+  /** 该页面已翻译的语言，透传给 Seo（hreflang）与 Header（语言切换）。 */
+  translations?: string[];
 }
 
 const props = Astro.props;
+// 语言由 URL 前缀决定，不靠 props 传：页面文件本身就长在 /en/ 下面，
+// 若再让调用方传一次，两处不一致时会产出 lang 与 canonical 互相矛盾的页面。
+const locale = localeFromPath(Astro.url.pathname);
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang={LOCALE_META[locale].htmlLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -34,7 +40,7 @@ const props = Astro.props;
       href="#main"
       class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[60] focus:rounded-lg focus:bg-brand-600 focus:px-4 focus:py-2 focus:text-white"
     >跳到主要内容</a>
-    <Header />
+    <Header availableLocales={props.translations} />
     <main id="main">
       <slot />
     </main>

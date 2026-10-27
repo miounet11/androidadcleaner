@@ -1,7 +1,7 @@
 {
-  "pages": 67,
+  "pages": 68,
   "htmlBytes": {
-    "max": 68158,
+    "max": 68146,
     "file": "models/index.html"
   },
   "similarity": {
@@ -9,7 +9,7 @@
     "pairs": 366
   },
   "sitemap": {
-    "urls": 67,
+    "urls": 68,
     "missing": 0
   },
   "jsonld": {

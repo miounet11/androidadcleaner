@@ -1,5 +1,13 @@
 ---
 import { SITE } from '../consts';
+import {
+  LOCALES,
+  LOCALE_META,
+  DEFAULT_LOCALE,
+  localeFromPath,
+  localizePath,
+  stripLocale,
+} from '../i18n/config';
 
 export interface Props {
   title?: string;
@@ -12,6 +20,8 @@ export interface Props {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   publishedTime?: string;
   modifiedTime?: string;
+  /** 该页面已翻译的语言。未翻译的语言不输出 hreflang，也不进 sitemap。 */
+  translations?: string[];
 }
 
 const {
@@ -25,26 +35,48 @@ const {
   jsonLd,
   publishedTime,
   modifiedTime,
+  translations,
 } = Astro.props;
+
+const locale = localeFromPath(path);
+const canonical = new URL(path, SITE.url).href;
+const ogImage = new URL(image, SITE.url).href;
+
+// 只给确实存在译文的语言输出 hreflang。指向不存在的 URL 会被判为软 404，
+// 比没有 hreflang 更伤索引。未声明 translations 时按「只存在当前语言」处理，
+// 这样已有页面不用逐个改动也不会产出错误的多语言标记。
+const translatedLocales = translations
+  ? LOCALES.filter((l) => translations.includes(l))
+  : [locale];
+const barePath = stripLocale(path);
 
 const fullTitle = title
   ? `${title} · ${SITE.name}`
   : `${SITE.name} — ${SITE.tagline}`;
-const canonical = new URL(path, SITE.url).href;
-const ogImage = new URL(image, SITE.url).href;
 
-const baseKeywords = [
-  '安卓去广告',
-  '安卓关闭广告',
-  '手机系统广告',
-  'adb 去广告',
-  'HyperOS 去广告',
-  'ColorOS 关闭广告',
-  'OriginOS 关闭广告',
-  'MagicOS 去广告',
-  '不 root 去广告',
-  '国产手机广告清理',
-];
+// 关键词按语言分组。中文词堆在英文页上既无意义，也会拉低相关性判断。
+const baseKeywords = locale === 'en'
+  ? [
+      'android ad remover',
+      'remove system ads android',
+      'disable ads Xiaomi HyperOS',
+      'ColorOS disable ads',
+      'OriginOS remove ads',
+      'adb block ads no root',
+      'chinese android bloatware',
+    ]
+  : [
+      '安卓去广告',
+      '安卓关闭广告',
+      '手机系统广告',
+      'adb 去广告',
+      'HyperOS 去广告',
+      'ColorOS 关闭广告',
+      'OriginOS 关闭广告',
+      'MagicOS 去广告',
+      '不 root 去广告',
+      '国产手机广告清理',
+    ];
 
 const finalKeywords = [...new Set([...keywords, ...baseKeywords])].join(',');
 ---
@@ -64,7 +96,10 @@ const finalKeywords = [...new Set([...keywords, ...baseKeywords])].join(',');
 <meta property="og:image" content={ogImage} />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:locale" content="zh_CN" />
+<meta property="og:locale" content={LOCALE_META[locale].ogLocale} />
+{translatedLocales.filter((l) => l !== locale).map((l) => (
+  <meta property="og:locale:alternate" content={LOCALE_META[l].ogLocale} />
+))}
 {publishedTime && <meta property="article:published_time" content={publishedTime} />}
 {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
 
@@ -73,8 +108,14 @@ const finalKeywords = [...new Set([...keywords, ...baseKeywords])].join(',');
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={ogImage} />
 
-<link rel="alternate" hreflang="zh-CN" href={canonical} />
-<link rel="alternate" hreflang="x-default" href={canonical} />
+{translatedLocales.map((l) => (
+  <link rel="alternate" hreflang={LOCALE_META[l].htmlLang} href={new URL(localizePath(barePath, l), SITE.url).href} />
+))}
+<link
+  rel="alternate"
+  hreflang="x-default"
+  href={new URL(localizePath(barePath, DEFAULT_LOCALE), SITE.url).href}
+/>
 
 <meta name="author" content={SITE.name} />
 <meta name="theme-color" content="#1f6c6b" />

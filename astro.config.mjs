@@ -35,6 +35,12 @@ export default defineConfig({
       serialize(item) {
         const path = new URL(item.url).pathname.replace(/\/$/, '') || '/';
 
+        // sitemap 与 hreflang/canonical 必须用同一个 URL 形式，否则搜索引擎
+        // 会认为是两个页面。语言首页统一写成带斜杠的 /en/。
+        if (path === '/en') {
+          item.url = `${new URL(item.url).origin}/en/`;
+        }
+
         // 机型页与教程页按真实更新日期给 lastmod，其余用站点更新日期
         let lastmod = SITE_UPDATED;
 

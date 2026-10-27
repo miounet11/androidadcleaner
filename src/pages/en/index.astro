@@ -1,0 +1,256 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../consts';
+import { BRAND_STATS, SITE_STATS } from '../../data/models';
+import { softwareApp, website, organization, faqPage } from '../../lib/schema';
+
+const homeFaq = [
+  {
+    q: 'Do I need to root my phone?',
+    a: 'No. The tool only flips settings that Android and vendor apps already expose through adb. No root, no bootloader unlock, no flashing, and system updates keep working.',
+  },
+  {
+    q: 'Can I undo the changes?',
+    a: 'Yes. Package state is snapshotted before every change, and suspended packages and notification channels can be restored with one command each.',
+  },
+  {
+    q: 'Will it silence delivery and order notifications?',
+    a: 'No. Marketing notifications are disabled per channel, while order, shipping and update notifications from the same app stay on. Weather alerts are kept as well.',
+  },
+  {
+    q: 'Which phones are supported?',
+    a: `Xiaomi / Redmi / POCO, OPPO / OnePlus / realme, vivo / iQOO, HONOR, Huawei (HarmonyOS 4) and Samsung — ${SITE_STATS.models} device entries across ${SITE_STATS.brands} brands. Devices marked as verified have a dedicated recipe; others can follow the brand checklist manually.`,
+  },
+  {
+    q: 'Does it work on HarmonyOS NEXT?',
+    a: 'No. HarmonyOS NEXT uses HDC instead of adb, so the tool cannot connect. You can only follow the checklist by hand on the phone.',
+  },
+  {
+    q: 'What is the easiest way to start?',
+    a: 'Download the desktop app for macOS or Windows, plug the phone in and click through. If you prefer the command line, the recipes in the repository can be run directly.',
+  },
+];
+
+const steps = [
+  {
+    n: '01',
+    title: 'Download the app',
+    text: 'macOS (Apple silicon or Intel) and Windows 10/11 builds are available.',
+    href: '/download',
+    cta: 'Get the installer',
+  },
+  {
+    n: '02',
+    title: 'Connect the phone',
+    text: 'Plug in a USB cable and enable Developer options plus USB debugging. The device model and OS build are detected automatically.',
+    href: '/guides/developer-mode',
+    cta: 'Developer mode guide',
+  },
+  {
+    n: '03',
+    title: 'Scan first',
+    text: 'A read-only scan lists ad packages, quick apps and marketing notification channels. Service notifications stay selected off.',
+    href: '/guides/detect',
+    cta: 'How the scan works',
+  },
+  {
+    n: '04',
+    title: 'Apply and finish',
+    text: 'Every step reports its own result, and a snapshot is saved so you can roll back.',
+    href: '/guides/restore',
+    cta: 'How to restore',
+  },
+];
+
+const capabilities = [
+  {
+    title: 'System ads',
+    desc: 'Personalised ads, OAID ad tracking and smart recommendation services, each switched off individually.',
+  },
+  {
+    title: 'Trending and feeds',
+    desc: 'Search trending lists, negative-screen feed cards and browser feeds removed as a block.',
+  },
+  {
+    title: 'Promo slots',
+    desc: 'App store carousels, splash ads and floating campaigns turned off through vendor service switches.',
+  },
+  {
+    title: 'Marketing push',
+    desc: 'Disabled per notification channel, so order, shipping and update notifications survive.',
+  },
+  {
+    title: 'Ad packages',
+    desc: 'System ad packages such as com.miui.systemAdSolution and com.opos.ads are suspended and cut off from the network.',
+  },
+  {
+    title: 'Quick apps',
+    desc: 'Install-free quick apps that ads jump into can be detected and disabled entirely.',
+  },
+];
+
+const notDoing = [
+  'No uninstalling or disabling system apps (no pm uninstall, no pm disable-user)',
+  'No system partition changes, no Magisk modules, no flashing',
+  'No accepting terms of service on your behalf',
+  'No screenshots of account or phone-number pages, no app list or notification content collected',
+];
+
+const title = 'Android Ad Cleaner — remove system ads and push notifications from Chinese Android phones';
+const description =
+  'Open-source tool that turns off system ads, trending feeds and marketing push on Chinese Android phones over adb. No root, no flashing, fully reversible. Recipes for Xiaomi, OPPO, vivo, HONOR and OnePlus.';
+---
+
+<Base
+  title={title}
+  description={description}
+  translations={['zh-CN', 'en']}
+  jsonLd={[organization, website, softwareApp, faqPage(homeFaq)]}
+>
+  <section class="relative overflow-hidden border-b border-ink-200/70">
+    <div class="grid-bg absolute inset-0 opacity-70" aria-hidden="true"></div>
+    <div
+      class="absolute -top-32 left-1/2 h-[420px] w-[820px] -translate-x-1/2 rounded-full bg-brand-200/35 blur-[110px]"
+      aria-hidden="true"
+    ></div>
+
+    <div class="container-page relative py-16 md:py-24">
+      <div class="grid items-center gap-14 lg:grid-cols-12">
+        <div class="lg:col-span-7">
+          <div class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3 py-1.5 text-[12px] font-medium text-brand-700 shadow-sm backdrop-blur">
+            <span class="relative flex h-1.5 w-1.5">
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-500 opacity-70"></span>
+              <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-600"></span>
+            </span>
+            v{SITE.latestVersion} · released {SITE.latestDate}
+          </div>
+
+          <h1 class="mt-6 text-[34px] leading-[1.16] font-bold tracking-tight text-ink-900 sm:text-[44px] md:text-[52px]">
+            Turn off system ads<br class="hidden sm:block" />
+            <span class="text-brand-600">in one pass</span>
+          </h1>
+
+          <p class="mt-6 max-w-xl text-[15.5px] leading-relaxed text-ink-600">
+            Chinese Android builds ship ads, trending lists and marketing push inside the system itself.
+            This tool flips the switches the vendors already expose, over adb — no root, no flashing,
+            and every change can be undone.
+          </p>
+
+          <div class="mt-8 flex flex-wrap items-center gap-3">
+            <a href="/download" class="btn-primary !px-5 !py-2.5">
+              Download for macOS / Windows
+            </a>
+            <a href={SITE.toolRepo} target="_blank" rel="noopener" class="btn-ghost !px-5 !py-2.5">
+              View source on GitHub
+            </a>
+          </div>
+
+          <dl class="mt-10 grid max-w-lg grid-cols-3 gap-6 border-t border-ink-200 pt-6">
+            <div>
+              <dt class="text-[12px] tracking-wide text-ink-400 uppercase">Devices</dt>
+              <dd class="mt-1 text-[22px] font-bold text-ink-900">{SITE_STATS.models}</dd>
+            </div>
+            <div>
+              <dt class="text-[12px] tracking-wide text-ink-400 uppercase">Brands</dt>
+              <dd class="mt-1 text-[22px] font-bold text-ink-900">{SITE_STATS.brands}</dd>
+            </div>
+            <div>
+              <dt class="text-[12px] tracking-wide text-ink-400 uppercase">Root required</dt>
+              <dd class="mt-1 text-[22px] font-bold text-ink-900">No</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="lg:col-span-5">
+          <div class="rounded-2xl border border-ink-200 bg-white/85 p-6 shadow-sm backdrop-blur">
+            <p class="text-[12.5px] font-semibold tracking-wider text-ink-400 uppercase">What gets turned off</p>
+            <ul class="mt-4 space-y-3">
+              {
+                capabilities.map((c) => (
+                  <li class="flex gap-3">
+                    <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
+                    <span class="text-[13.5px] leading-relaxed text-ink-600">
+                      <strong class="font-semibold text-ink-900">{c.title}</strong> — {c.desc}
+                    </span>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-16 md:py-20">
+    <h2 class="text-[26px] font-bold tracking-tight text-ink-900 md:text-[32px]">Four steps</h2>
+    <ol class="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+      {
+        steps.map((s) => (
+          <li class="rounded-xl border border-ink-200 bg-white p-5">
+            <span class="text-[12px] font-semibold tracking-wider text-brand-600">{s.n}</span>
+            <h3 class="mt-2 text-[16px] font-semibold text-ink-900">{s.title}</h3>
+            <p class="mt-2 text-[13.5px] leading-relaxed text-ink-600">{s.text}</p>
+            <a href={s.href} class="mt-3 inline-block text-[13px] font-medium text-brand-600 hover:text-brand-700">
+              {s.cta} →
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section class="border-y border-ink-200/70 bg-ink-50/60">
+    <div class="container-page py-16 md:py-20">
+      <div class="grid gap-10 lg:grid-cols-12">
+        <div class="lg:col-span-5">
+          <h2 class="text-[26px] font-bold tracking-tight text-ink-900 md:text-[32px]">What it will not do</h2>
+          <p class="mt-4 text-[14.5px] leading-relaxed text-ink-600">
+            The constraints are enforced in the execution engine, not just documented.
+          </p>
+        </div>
+        <ul class="grid gap-3 lg:col-span-7">
+          {
+            notDoing.map((item) => (
+              <li class="flex gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3">
+                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-300" aria-hidden="true" />
+                <span class="text-[13.5px] leading-relaxed text-ink-700">{item}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-16 md:py-20">
+    <h2 class="text-[26px] font-bold tracking-tight text-ink-900 md:text-[32px]">Supported brands</h2>
+    <p class="mt-4 max-w-2xl text-[14.5px] leading-relaxed text-ink-600">
+      Device-specific guides are currently written in Chinese. The desktop app detects your model and
+      picks the matching recipe automatically, so you do not need to read them.
+    </p>
+    <ul class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      {
+        BRAND_STATS.slice(0, 6).map((b) => (
+          <li class="rounded-lg border border-ink-200 bg-white px-4 py-3 text-center">
+            <span class="text-[14px] font-semibold text-ink-900">{b.name}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="container-page pb-20">
+    <h2 class="text-[26px] font-bold tracking-tight text-ink-900 md:text-[32px]">Questions</h2>
+    <dl class="mt-8 grid gap-4 md:grid-cols-2">
+      {
+        homeFaq.map((item) => (
+          <div class="rounded-xl border border-ink-200 bg-white p-5">
+            <dt class="text-[14.5px] font-semibold text-ink-900">{item.q}</dt>
+            <dd class="mt-2 text-[13.5px] leading-relaxed text-ink-600">{item.a}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+</Base>
