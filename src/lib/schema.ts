@@ -6,7 +6,7 @@ export const organization = {
   '@type': 'Organization',
   name: SITE.name,
   url: SITE.url,
-  logo: `${SITE.url}/og-default.png`,
+  logo: `${SITE.url}/icon-512.png`,
   sameAs: [SITE.repo, SITE.toolRepo],
   description: SITE.description,
 };
@@ -132,7 +132,7 @@ export function article(opts: {
     publisher: {
       '@type': 'Organization',
       name: SITE.name,
-      logo: { '@type': 'ImageObject', url: `${SITE.url}/og-default.png` },
+      logo: { '@type': 'ImageObject', url: `${SITE.url}/icon-512.png`, width: 512, height: 512 },
     },
   };
 }
