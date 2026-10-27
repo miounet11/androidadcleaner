@@ -31,7 +31,11 @@ export const LOCALE_META: Record<Locale, {
  * 只有列在这里的路径才会生成非默认语言版本。加语言前必须先加路由，
  * 否则导航会指向不存在的页面——那是 404，比不给多语言更糟。
  */
-export const TRANSLATED_PATHS: ReadonlySet<string> = new Set(['/']);
+export const TRANSLATED_PATHS: ReadonlySet<string> = new Set([
+  '/',
+  '/download',
+  '/features',
+]);
 
 /** 去掉结尾斜杠；`/` 保持为 `/`，供查表比对。 */
 function normalizePath(path: string): string {

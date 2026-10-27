@@ -1,0 +1,236 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../consts';
+import { SITE_STATS } from '../../data/models';
+import { breadcrumb, softwareApp } from '../../lib/schema';
+
+const url = `${SITE.url}/en/features`;
+
+const pillars = [
+  {
+    title: 'Only flips official switches',
+    desc: 'Every ad category here has a switch the vendor already shipped. The tool walks three levels of settings and six apps to put those switches where they belong. It does not inject into processes or modify system files.',
+  },
+  {
+    title: 'No root, no custom ROM',
+    desc: 'It uses the official adb debugging interface. The system partition is untouched, OTA updates keep working, and your warranty is unaffected.',
+  },
+  {
+    title: 'Everything is reversible',
+    desc: 'Suspended packages come back with one command, notification channels roll back from a snapshot, and in-app toggles get their original path back. Nothing is one-way.',
+  },
+];
+
+const capabilities = [
+  {
+    name: 'Automatic per-device recipes',
+    desc: 'Matches a recipe to your model and build number, applies it step by step, and reads every value back. On a version mismatch it falls into safe mode and only performs steps it can confirm.',
+    detail: ['Matches on ro.build.display.id prefix', 'Read-back after each step', 'Stops on failure, never blind-taps'],
+  },
+  {
+    name: 'Channel-level notification control',
+    desc: 'Kills marketing channels while keeping orders, deliveries, payments and calendar alerts. Decisions are keyed on channel name and id; anything uncertain is left alone.',
+    detail: ['Separates marketing from service channels', 'Built-in protected list', 'Individually reversible'],
+  },
+  {
+    name: 'Ad components suspended',
+    desc: 'Packages like msa and opos.ads have no user-facing toggle. They are suspended with pm suspend rather than uninstalled, paired with a network block so they cannot be pulled back up.',
+    detail: ['msa plus network block', 'Never uses uninstall', 'Re-runnable after reboot'],
+  },
+  {
+    name: 'Quick app entry points closed',
+    desc: 'Install-free quick apps are the easiest ad surface to miss — one tap from an ad and you are inside. Detects each vendor implementation and disables the recommendation slot or the whole entry.',
+    detail: ['Xiaomi / OPPO / vivo detection', 'Can disable only the feed', 'Restorable anytime'],
+  },
+  {
+    name: 'Snapshot before changes',
+    desc: 'Records the suspended package list, notification channel state and key setting values. If something breaks you roll back from the snapshot instead of relying on memory.',
+    detail: ['Timestamped local snapshot', 'Restore by category', 'Not shared across devices'],
+  },
+  {
+    name: 'Read-only detection first',
+    desc: 'See the situation before touching anything: model, build number, whether a recipe matches, which ad components exist, how many channels are in play. Detection writes nothing.',
+    detail: ['Zero writes', 'Version mismatch flagged', 'Report is exportable'],
+  },
+];
+
+const principles = [
+  {
+    title: 'Cancels out of consent screens',
+    desc: 'The automation never accepts a terms-of-service or privacy policy on your behalf. It clicks cancel and skips that section.',
+  },
+  {
+    title: 'Skips accounts and payment',
+    desc: 'Login, payment and phone-number screens are detected and skipped. Nothing is read, nothing is captured.',
+  },
+  {
+    title: 'No telemetry',
+    desc: 'There is no analytics or crash reporting. Logs stay in a local file; you decide whether to copy them into an issue.',
+  },
+  {
+    title: 'Does not decide what to delete',
+    desc: 'No pm uninstall, no force-stopping unrelated apps, no disabling accessibility services, no reboots.',
+  },
+];
+
+const platforms = [
+  { name: 'Windows', req: '10 (1809+) / 11', note: 'Vendor or generic ADB USB driver required' },
+  { name: 'macOS', req: '12 Monterey or later', note: 'Universal build for Intel and Apple Silicon' },
+  { name: 'Linux', req: 'glibc 2.31+', note: 'udev rule needed to authorize USB devices' },
+  { name: 'CLI', req: 'Python 3.9+', note: 'Full functionality without a GUI' },
+];
+---
+
+<Base
+  title="Features — what it actually does"
+  description="Six core capabilities: automatic per-device recipes, channel-level notification control, suspended ad components, quick app entry closure, pre-change snapshots, and read-only detection. Every action is reversible."
+  keywords={['disable system ads android', 'adb disable ads', 'notification channel block', 'msa suspend']}
+  translations={['zh-CN', 'en']}
+  jsonLd={[
+    softwareApp,
+    breadcrumb([
+      { name: 'Home', url: SITE.url + '/en/' },
+      { name: 'Features', url },
+    ]),
+  ]}
+>
+  <section class="border-b border-ink-100 bg-gradient-to-b from-brand-50/40 to-white">
+    <div class="container-page py-16 sm:py-20">
+      <div class="max-w-3xl">
+        <p class="tag-brand">Features</p>
+        <h1 class="mt-4 text-[34px] leading-[1.2] font-bold sm:text-[44px]">
+          It installs nothing.<br class="sm:hidden" /> It just moves the switches.
+        </h1>
+        <p class="mt-5 text-[16px] leading-relaxed text-ink-600">
+          Almost every system ad on a Chinese Android phone already has an official off switch. The problem
+          is that they are scattered across three levels of settings and six apps, and every vendor puts them
+          somewhere different. The tool does exactly one thing: find those switches for your model and build,
+          set them correctly, then read every value back.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="/en/download" class="btn-primary">Download</a>
+          <a href="/guides/detect" class="btn-ghost">Read the detection guide</a>
+        </div>
+      </div>
+
+      <dl class="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {
+          [
+            { k: 'Brands', v: SITE_STATS.brands },
+            { k: 'Device entries', v: SITE_STATS.models },
+            { k: 'Verified on hardware', v: SITE_STATS.verified },
+            { k: 'Recipes', v: SITE_STATS.scripts },
+          ].map((s) => (
+            <div class="card px-4 py-4">
+              <dt class="text-[12px] font-medium text-ink-500">{s.k}</dt>
+              <dd class="mt-1 text-[26px] font-bold tabular-nums text-brand-600">{s.v}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <section class="container-page py-16">
+    <h2 class="text-[26px] font-bold">Three ground rules</h2>
+    <div class="mt-8 grid gap-5 md:grid-cols-3">
+      {
+        pillars.map((p) => (
+          <div class="card card-hover p-6">
+            <h3 class="text-[17px] font-semibold">{p.title}</h3>
+            <p class="mt-2.5 text-[14px] leading-relaxed text-ink-500">{p.desc}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="border-y border-ink-100 bg-ink-50/50 py-16">
+    <div class="container-page">
+      <h2 class="text-[26px] font-bold">Six capabilities</h2>
+      <p class="mt-2 text-[14.5px] text-ink-500">Each one maps to a real ad surface, not a marketing abstraction.</p>
+      <div class="mt-9 grid gap-5 md:grid-cols-2">
+        {
+          capabilities.map((c) => (
+            <article class="card card-hover p-6">
+              <h3 class="text-[16.5px] font-semibold text-ink-900">{c.name}</h3>
+              <p class="mt-2.5 text-[14px] leading-relaxed text-ink-500">{c.desc}</p>
+              <ul class="mt-4 flex flex-wrap gap-1.5">
+                {c.detail.map((d) => (
+                  <li class="tag-neutral">{d}</li>
+                ))}
+              </ul>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-16">
+    <div class="grid gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
+      <div>
+        <h2 class="text-[26px] font-bold">What it deliberately will not do</h2>
+        <p class="mt-3 text-[14.5px] leading-relaxed text-ink-500">
+          Clear boundaries are what make it reasonable to run on the phone you actually depend on. These four
+          are design constraints, not missing features.
+        </p>
+        <a href="/guides/no-root" class="mt-6 inline-flex items-center gap-1.5 text-[14px] font-semibold text-brand-600 hover:text-brand-700">
+          Why root is not needed
+          <svg viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
+        </a>
+      </div>
+      <ul class="space-y-3">
+        {
+          principles.map((p) => (
+            <li class="card flex gap-4 p-5">
+              <span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600">
+                <svg viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>
+              </span>
+              <div>
+                <h3 class="text-[15px] font-semibold">{p.title}</h3>
+                <p class="mt-1 text-[13.5px] leading-relaxed text-ink-500">{p.desc}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="border-t border-ink-100 py-16">
+    <div class="container-page">
+      <h2 class="text-[26px] font-bold">Requirements</h2>
+      <div class="mt-8 overflow-hidden rounded-2xl border border-ink-200">
+        <table class="w-full text-[14px]">
+          <thead class="bg-ink-50">
+            <tr>
+              <th class="px-5 py-3 text-left font-semibold text-ink-900">Platform</th>
+              <th class="px-5 py-3 text-left font-semibold text-ink-900">Requirement</th>
+              <th class="px-5 py-3 text-left font-semibold text-ink-900">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              platforms.map((p) => (
+                <tr class="border-t border-ink-100">
+                  <td class="px-5 py-3.5 font-medium text-ink-900">{p.name}</td>
+                  <td class="px-5 py-3.5 text-ink-600">{p.req}</td>
+                  <td class="px-5 py-3.5 text-ink-500">{p.note}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-12 flex flex-col items-start justify-between gap-5 rounded-2xl bg-ink-900 px-7 py-8 sm:flex-row sm:items-center">
+        <div>
+          <h2 class="text-[20px] font-bold text-white">Spend thirty seconds on detection first</h2>
+          <p class="mt-1.5 text-[14px] text-ink-300">See how far your model and build can go before you change anything.</p>
+        </div>
+        <a href="/en/download" class="btn-primary shrink-0">Download</a>
+      </div>
+    </div>
+  </section>
+</Base>

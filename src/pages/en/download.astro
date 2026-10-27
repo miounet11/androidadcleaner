@@ -1,0 +1,178 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../consts';
+import { SITE_STATS } from '../../data/models';
+import { breadcrumb, faqPage, softwareApp } from '../../lib/schema';
+
+const url = `${SITE.url}/en/download`;
+
+const channels = [
+  {
+    href: '/download/pc',
+    tag: 'Desktop',
+    title: 'Desktop client',
+    desc: 'Graphical client for Windows, macOS and Linux. Plug in, detect, apply — three steps. A headless command-line version is included.',
+    meta: ['Windows 10 / 11', 'macOS 12+', 'Linux glibc 2.31+'],
+    primary: true,
+  },
+  {
+    href: '/download/ios',
+    tag: 'iOS',
+    title: 'iOS companion',
+    desc: 'A pocket reference of per-device toggle paths with progress tracking. iOS cannot reach Android over adb, so this is a checklist, not a remote.',
+    meta: ['iPhone / iPad', 'iOS 16+', 'Works offline'],
+    primary: false,
+  },
+  {
+    href: SITE.releases,
+    tag: 'Source',
+    title: 'CLI and source code',
+    desc: 'Runs on Python 3.9+ with no GUI dependency. Full feature parity. The code is on GitHub — read it before you trust it.',
+    meta: ['pip install', 'MIT license', 'Full features'],
+    primary: false,
+    external: true,
+  },
+];
+
+const steps = [
+  { n: '01', t: 'Unpack and run', d: 'The desktop build is a portable archive — unzip and launch. On first run it looks for adb and walks you through installing it if missing.' },
+  { n: '02', t: 'Enable USB debugging', d: 'Settings → About phone → tap Build number 7 times → Developer options → USB debugging. Some vendors hide a second security switch.' },
+  { n: '03', t: 'Connect and authorize', d: 'Tick "Always allow" on the RSA prompt. If no prompt appears, the cable is usually charge-only.' },
+  { n: '04', t: 'Detect → snapshot → apply', d: 'Run the read-only detection first, save a snapshot, then run the device recipe or follow the checklist manually.' },
+];
+
+const faqs = [
+  {
+    q: 'macOS says the developer cannot be verified. What now?',
+    a: 'The build is not notarized by Apple, so Gatekeeper blocks the first launch. Open System Settings → Privacy & Security and click "Open Anyway", or run xattr -dr com.apple.quarantine on the unzipped folder. On Windows, SmartScreen shows "More info → Run anyway".',
+  },
+  {
+    q: 'Do I need to install adb separately?',
+    a: 'The client bundles adb, so usually not. If a newer adb already exists on your PATH it will be preferred. On Windows, an unrecognized device normally means a missing vendor USB driver.',
+  },
+  {
+    q: 'Can this run on the phone alone?',
+    a: 'No. Disabling ads relies on the adb debugging channel, which needs a host machine — a phone cannot grant itself debugging rights. The iOS app is a reference, not a remote control.',
+  },
+  {
+    q: 'Is it paid?',
+    a: 'Free and MIT licensed. No pro tier, no in-app purchases, no account, no telemetry.',
+  },
+  {
+    q: 'Which phones are supported?',
+    a: `${SITE_STATS.models} device entries across ${SITE_STATS.brands} brands, ${SITE_STATS.verified} of them verified on real hardware. For anything not listed, run the read-only detection to see how well the recipe matches, or follow the brand checklist by hand.`,
+  },
+  {
+    q: 'Does it work on HarmonyOS NEXT?',
+    a: 'No. HarmonyOS NEXT uses HDC instead of adb, a different protocol. HarmonyOS 4 and earlier are AOSP-based and do work.',
+  },
+];
+---
+
+<Base
+  title="Download — desktop client, CLI and iOS reference"
+  description={`Download Android Ad Cleaner. Desktop builds for Windows, macOS and Linux, plus an iOS device checklist and a Python CLI. Free and open source, covering ${SITE_STATS.brands} brands and ${SITE_STATS.models} device entries.`}
+  keywords={['android ad cleaner download', 'remove ads android no root', 'disable system ads adb']}
+  translations={['zh-CN', 'en']}
+  jsonLd={[
+    softwareApp,
+    breadcrumb([
+      { name: 'Home', url: SITE.url + '/en/' },
+      { name: 'Download', url },
+    ]),
+    faqPage(faqs),
+  ]}
+>
+  <section class="border-b border-ink-100 bg-gradient-to-b from-brand-50/40 to-white">
+    <div class="container-page py-16 sm:py-20">
+      <div class="max-w-2xl">
+        <p class="tag-brand">Download</p>
+        <h1 class="mt-4 text-[34px] leading-[1.2] font-bold sm:text-[42px]">Pick the build that fits</h1>
+        <p class="mt-4 text-[16px] leading-relaxed text-ink-600">
+          The desktop client is the full experience, the CLI suits automation, and the iOS app keeps the
+          device checklist in your pocket. Everything is free and open source. Version {SITE.latestVersion},
+          released {SITE.latestDate}.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-14">
+    <div class="grid gap-5 lg:grid-cols-3">
+      {
+        channels.map((c) => (
+          <a
+            href={c.href}
+            target={c.external ? '_blank' : undefined}
+            rel={c.external ? 'noopener' : undefined}
+            class:list={[
+              'card card-hover group flex flex-col p-6',
+              c.primary && 'ring-1 ring-brand-200',
+            ]}
+          >
+            <div class="flex items-center justify-between">
+              <span class:list={[c.primary ? 'tag-brand' : 'tag-neutral']}>{c.tag}</span>
+              {c.primary && <span class="text-[11.5px] font-medium text-brand-600">Recommended</span>}
+            </div>
+            <h2 class="mt-4 text-[19px] font-bold text-ink-900">{c.title}</h2>
+            <p class="mt-2 flex-1 text-[14px] leading-relaxed text-ink-500">{c.desc}</p>
+            <ul class="mt-4 space-y-1.5">
+              {c.meta.map((m) => (
+                <li class="flex items-center gap-1.5 text-[12.5px] text-ink-500">
+                  <svg viewBox="0 0 16 16" class="h-3 w-3 shrink-0 text-brand-500" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>
+                  {m}
+                </li>
+              ))}
+            </ul>
+            <span class:list={['mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold', c.primary ? 'text-brand-600' : 'text-ink-700']}>
+              Get it
+              <svg viewBox="0 0 16 16" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
+            </span>
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="mt-14">
+      <h2 class="text-[24px] font-bold">Four steps</h2>
+      <ol class="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          steps.map((s) => (
+            <li class="card p-5">
+              <span class="font-mono text-[12px] font-bold text-brand-400">{s.n}</span>
+              <h3 class="mt-2 text-[15.5px] font-semibold">{s.t}</h3>
+              <p class="mt-2 text-[13.5px] leading-relaxed text-ink-500">{s.d}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="mt-5 text-[13.5px] text-ink-500">
+        The detailed walkthroughs are currently written in Chinese only — see
+        <a href="/guides/developer-mode" class="font-medium text-brand-600 hover:text-brand-700">enabling developer options</a>
+        and
+        <a href="/guides/detect" class="font-medium text-brand-600 hover:text-brand-700">running read-only detection</a>.
+      </p>
+    </div>
+  </section>
+
+  <section class="border-t border-ink-100 bg-ink-50/50 py-14">
+    <div class="container-page">
+      <h2 class="text-[24px] font-bold">Download and installation questions</h2>
+      <dl class="mt-7 space-y-3">
+        {
+          faqs.map((f) => (
+            <div class="card p-5">
+              <dt class="text-[15px] font-semibold text-ink-900">{f.q}</dt>
+              <dd class="mt-2 text-[14px] leading-relaxed text-ink-500">{f.a}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="mt-8 text-[13.5px] text-ink-500">
+        More questions?
+        <a href="https://github.com/miounet11/android-ad-cleaner/issues" target="_blank" rel="noopener" class="font-medium text-brand-600 hover:text-brand-700">Open an issue</a>
+        — the maintainers respond in English.
+      </p>
+    </div>
+  </section>
+</Base>
