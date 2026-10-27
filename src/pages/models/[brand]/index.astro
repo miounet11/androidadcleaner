@@ -1,0 +1,147 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { BRANDS, STATUS_META, getModelsByBrand } from '../../../data/models';
+import { breadcrumb, faqPage } from '../../../lib/schema';
+
+export function getStaticPaths() {
+  return BRANDS.map((brand) => ({
+    params: { brand: brand.slug },
+    props: { brand },
+  }));
+}
+
+const { brand } = Astro.props;
+const models = getModelsByBrand(brand.slug);
+const verified = models.filter((m) => m.status === 'verified').length;
+const withScript = models.filter((m) => m.script).length;
+
+const crumb = breadcrumb([
+  { name: '首页', url: '/' },
+  { name: '机型库', url: '/models' },
+  { name: brand.name, url: `/models/${brand.slug}` },
+]);
+
+const faq = [
+  {
+    q: `${brand.osName} 的广告入口主要在哪？`,
+    a: brand.adSurfaces.map((s) => `${s.name}（${s.path}）`).join('；') + '。',
+  },
+  {
+    q: `${brand.name} 需要 root 吗？`,
+    a: '不需要。所有操作通过 adb 调用系统公开设置项完成，不刷机、不解锁 Bootloader，随时可以还原。',
+  },
+  {
+    q: `${brand.name} 有几个机型可以直接自动执行？`,
+    a: `当前库里有 ${models.length} 个机型条目，其中 ${withScript} 个有专用机型脚本，${verified} 个已在真机完整验证。其余机型可参考同系清单手动操作。`,
+  },
+];
+---
+
+<Base
+  title={`${brand.name} 去广告 — ${brand.osName} 广告关闭路径与机型清单`}
+  description={`${brand.intro} 收录 ${models.length} 个 ${brand.name} 机型的去广告设置路径、脚本状态与验证范围，${verified} 个已在真机验证。`}
+  keywords={[`${brand.en} 去广告`, `${brand.osName} 关闭广告`, `${brand.name} 广告关闭`]}
+  jsonLd={[crumb, faqPage(faq)]}
+>
+  <section class="border-b border-ink-200/70 bg-ink-50/50">
+    <div class="container-page py-12">
+      <nav aria-label="面包屑" class="text-[12.5px] text-ink-400">
+        <a href="/" class="hover:text-brand-600">首页</a>
+        <span class="mx-2">/</span>
+        <a href="/models" class="hover:text-brand-600">机型库</a>
+        <span class="mx-2">/</span>
+        <span class="text-ink-700">{brand.name}</span>
+      </nav>
+
+      <div class="mt-5 flex items-start gap-4">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-[15px] font-bold text-white" style={`background:${brand.color}`}>
+          {brand.en.slice(0, 2).toUpperCase()}
+        </span>
+        <div>
+          <h1 class="text-[28px] leading-tight font-bold tracking-tight sm:text-[36px]">
+            {brand.name} 去广告
+          </h1>
+          <p class="mt-1.5 text-[13px] font-medium text-ink-500">{brand.osName}</p>
+        </div>
+      </div>
+
+      <p class="mt-5 max-w-3xl text-[15px] leading-relaxed text-ink-600">{brand.intro}</p>
+
+      <dl class="mt-8 flex flex-wrap gap-x-8 gap-y-3">
+        <div><dt class="text-[11.5px] text-ink-400">机型条目</dt><dd class="text-[20px] font-bold text-ink-900">{models.length}</dd></div>
+        <div><dt class="text-[11.5px] text-ink-400">实测通过</dt><dd class="text-[20px] font-bold text-brand-600">{verified}</dd></div>
+        <div><dt class="text-[11.5px] text-ink-400">专用脚本</dt><dd class="text-[20px] font-bold text-ink-900">{withScript}</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="container-page py-12">
+    <h2 class="text-[22px] font-bold tracking-tight">{brand.osName} 的广告入口</h2>
+    <p class="mt-2 max-w-2xl text-[14px] leading-relaxed text-ink-600">
+      下表是这类系统里广告出现的位置和对应处理方式。逐项点进去关掉就是手动清单的核心。
+    </p>
+
+    <div class="mt-6 grid gap-3 md:grid-cols-2">
+      {
+        brand.adSurfaces.map((s) => (
+          <div class="card p-5">
+            <h3 class="text-[14.5px] font-semibold text-ink-900">{s.name}</h3>
+            <p class="mt-2 rounded-lg bg-ink-50 px-3 py-2 font-mono text-[12px] leading-relaxed text-ink-600">
+              {s.path}
+            </p>
+            <p class="mt-2.5 text-[13px] leading-relaxed text-ink-500">{s.action}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="container-page pb-12">
+    <h2 class="text-[22px] font-bold tracking-tight">这个品牌的坑</h2>
+    <div class="mt-5 space-y-2.5">
+      {
+        brand.pitfalls.map((p) => (
+          <div class="flex gap-3 rounded-xl border border-amber-200/70 bg-amber-50/50 p-4">
+            <span class="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-amber-100 text-[11px] font-bold text-amber-700">!</span>
+            <div>
+              <h3 class="text-[13.5px] font-semibold text-ink-900">{p.title}</h3>
+              <p class="mt-1 text-[13px] leading-relaxed text-ink-600">{p.detail}</p>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="container-page pb-16">
+    <h2 class="text-[22px] font-bold tracking-tight">机型清单</h2>
+    <div class="mt-5 grid gap-3 md:grid-cols-2">
+      {
+        models.map((m) => (
+          <a href={`/models/${m.brand}/${m.code.toLowerCase()}`} class="card card-hover group p-5">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <h3 class="truncate text-[15px] font-semibold text-ink-900 group-hover:text-brand-700">{m.name}</h3>
+                <p class="mt-0.5 font-mono text-[11.5px] text-ink-400">{m.code}</p>
+              </div>
+              <span class:list={['shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-medium ring-1 ring-inset', STATUS_META[m.status].tone]}>
+                {STATUS_META[m.status].label}
+              </span>
+            </div>
+            <p class="mt-2.5 text-[12.5px] text-ink-500">{m.os} · {m.android}</p>
+            <p class="mt-2 line-clamp-2 text-[12.5px] leading-relaxed text-ink-500">{m.note}</p>
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="mt-10 rounded-2xl border border-ink-200 bg-ink-50/60 p-6">
+      <h2 class="text-[17px] font-semibold">下一步</h2>
+      <div class="mt-4 flex flex-wrap gap-2.5">
+        <a href="/download" class="btn-primary">下载客户端</a>
+        <a href="/guides/manual-checklist" class="btn-ghost">手动清单</a>
+        <a href="/guides/developer-mode" class="btn-ghost">开启 USB 调试</a>
+      </div>
+    </div>
+  </section>
+</Base>

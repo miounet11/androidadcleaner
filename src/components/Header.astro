@@ -1,0 +1,94 @@
+---
+import { NAV, SITE } from '../consts';
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) =>
+  path === href || (href !== '/' && path.startsWith(href));
+---
+
+<header
+  class="sticky top-0 z-50 border-b border-ink-200/70 bg-white/85 backdrop-blur-xl"
+>
+  <div class="container-page flex h-16 items-center justify-between gap-4">
+    <a href="/" class="flex shrink-0 items-center gap-2.5" aria-label={`${SITE.name} 首页`}>
+      <span
+        class="grid h-9 w-9 place-items-center rounded-xl bg-brand-600 text-white shadow-sm"
+      >
+        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="6" y="2" width="12" height="20" rx="3" />
+          <path d="M9.5 7.5l5 5M14.5 7.5l-5 5" />
+        </svg>
+      </span>
+      <span class="leading-tight">
+        <span class="block text-[15px] font-bold tracking-tight text-ink-900">安卓去广告</span>
+        <span class="block text-[10.5px] font-medium tracking-wide text-ink-400">ANDROID AD CLEANER</span>
+      </span>
+    </a>
+
+    <nav class="hidden items-center gap-1 md:flex" aria-label="主导航">
+      {
+        NAV.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              'rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors',
+              isActive(item.href)
+                ? 'bg-brand-50 text-brand-700'
+                : 'text-ink-600 hover:bg-ink-50 hover:text-ink-900',
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <a href={SITE.repo} target="_blank" rel="noopener" class="btn-ghost hidden !px-3.5 !py-2 sm:inline-flex" aria-label="GitHub 仓库">
+        <svg viewBox="0 0 16 16" class="h-4 w-4" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span class="hidden sm:inline">GitHub</span>
+      </a>
+      <a href="/download" class="btn-primary !px-4 !py-2">
+        下载 <span class="hidden sm:inline">客户端</span>
+      </a>
+      <button
+        type="button"
+        id="mobile-menu-btn"
+        class="grid h-9 w-9 place-items-center rounded-lg border border-ink-200 text-ink-700 md:hidden"
+        aria-label="打开菜单"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobile-menu" class="hidden border-t border-ink-200 bg-white md:hidden">
+    <nav class="container-page grid gap-1 py-3" aria-label="移动导航">
+      {
+        NAV.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              'rounded-lg px-3 py-2.5 text-[14px] font-medium',
+              isActive(item.href) ? 'bg-brand-50 text-brand-700' : 'text-ink-700 hover:bg-ink-50',
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>
+
+<script>
+  const btn = document.getElementById('mobile-menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  btn?.addEventListener('click', () => {
+    const open = menu?.classList.toggle('hidden') === false;
+    btn.setAttribute('aria-expanded', String(open));
+  });
+</script>

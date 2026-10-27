@@ -1,0 +1,133 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../consts';
+import { getCollection } from 'astro:content';
+import { breadcrumb } from '../../lib/schema';
+
+const url = `${SITE.url}/guides`;
+const all = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
+
+const categories = ['入门', '操作', '机型', '进阶', '还原', '排查'] as const;
+const byCategory = categories
+  .map((c) => ({ name: c, items: all.filter((g) => g.data.category === c) }))
+  .filter((g) => g.items.length > 0);
+
+const featured = all.filter((g) => g.data.featured);
+const readingTotal = all.reduce((sum, g) => sum + g.data.readingTime, 0);
+---
+
+<Base
+  title="使用教程"
+  description={`安卓去广告工具的完整使用教程：开启 USB 调试、只读检测、手动清单、备份还原、通知渠道、系统广告组件、快应用和故障排查。共 ${all.length} 篇，按入门到进阶排列。`}
+  keywords={['安卓去广告教程', 'adb 去广告教程', '关闭系统广告步骤', '安卓关闭广告']}
+  jsonLd={[
+    breadcrumb([
+      { name: '首页', url: SITE.url + '/' },
+      { name: '教程', url },
+    ]),
+  ]}
+>
+  <section class="border-b border-ink-100 bg-gradient-to-b from-brand-50/40 to-white">
+    <div class="container-page py-14 sm:py-16">
+      <div class="max-w-2xl">
+        <p class="tag-brand">教程</p>
+        <h1 class="mt-4 text-[32px] leading-tight font-bold sm:text-[40px]">从插线到还原</h1>
+        <p class="mt-4 text-[15.5px] leading-relaxed text-ink-600">
+          共 {all.length} 篇，合计约 {readingTotal} 分钟阅读。不知道从哪开始，先看
+          <a href="/guides/developer-mode" class="font-medium text-brand-600 hover:text-brand-700">开启 USB 调试</a>，
+          再看<a href="/guides/detect" class="font-medium text-brand-600 hover:text-brand-700">只读检测</a>。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="container-page py-12">
+    <div class="grid gap-12 lg:grid-cols-[1fr_240px] lg:gap-14">
+      <div class="space-y-14">
+        <section>
+          <h2 class="text-[20px] font-bold">建议先读</h2>
+          <div class="mt-5 grid gap-4 sm:grid-cols-2">
+            {
+              featured.map((g) => (
+                <a href={`/guides/${g.id}`} class="card card-hover group flex flex-col p-5">
+                  <div class="flex items-center gap-2">
+                    <span class="tag-brand">{g.data.category}</span>
+                    <span class="text-[11.5px] text-ink-400">{g.data.readingTime} 分钟</span>
+                  </div>
+                  <h3 class="mt-3 text-[16px] font-semibold text-ink-900 group-hover:text-brand-700">
+                    {g.data.title}
+                  </h3>
+                  <p class="mt-2 flex-1 text-[13.5px] leading-relaxed text-ink-500">
+                    {g.data.description}
+                  </p>
+                </a>
+              ))
+            }
+          </div>
+        </section>
+
+        {
+          byCategory.map((cat) => (
+            <section id={cat.name}>
+              <div class="flex items-center gap-3">
+                <h2 class="text-[20px] font-bold">{cat.name}</h2>
+                <span class="text-[12px] tabular-nums text-ink-400">{cat.items.length} 篇</span>
+              </div>
+              <div class="mt-5 divide-y divide-ink-100 overflow-hidden rounded-2xl border border-ink-200">
+                {cat.items.map((g) => (
+                  <a href={`/guides/${g.id}`} class="group flex items-start gap-4 bg-white px-5 py-4 hover:bg-ink-50/60">
+                    <span class="mt-0.5 font-mono text-[12px] tabular-nums text-ink-300">
+                      {String(g.data.order).padStart(2, '0')}
+                    </span>
+                    <span class="flex-1">
+                      <span class="block text-[15px] font-semibold text-ink-900 group-hover:text-brand-700">
+                        {g.data.title}
+                      </span>
+                      <span class="mt-1 block text-[13px] leading-relaxed text-ink-500">
+                        {g.data.description}
+                      </span>
+                    </span>
+                    <span class="mt-1 hidden shrink-0 text-[11.5px] text-ink-400 sm:block">
+                      {g.data.readingTime} 分钟
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          ))
+        }
+      </div>
+
+      <aside class="lg:sticky lg:top-24 lg:self-start">
+        <div class="card p-5">
+          <h2 class="text-[12px] font-semibold tracking-wider text-ink-400 uppercase">分类</h2>
+          <ul class="mt-3 space-y-1">
+            {
+              byCategory.map((c) => (
+                <li>
+                  <a
+                    href={`#${c.name}`}
+                    class="flex items-center justify-between rounded-lg px-2.5 py-1.5 text-[13.5px] text-ink-600 hover:bg-ink-50 hover:text-brand-700"
+                  >
+                    {c.name}
+                    <span class="text-[11.5px] tabular-nums text-ink-400">{c.items.length}</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div class="mt-4 rounded-2xl bg-ink-900 p-5">
+          <h2 class="text-[14px] font-semibold text-white">不想连电脑？</h2>
+          <p class="mt-1.5 text-[12.5px] leading-relaxed text-ink-300">
+            手动清单按品牌列出每一项设置路径，只在手机上也能关掉大部分系统广告。
+          </p>
+          <a href="/guides/manual-checklist" class="mt-3 inline-flex text-[12.5px] font-semibold text-brand-200 hover:text-white">
+            查看手动清单 →
+          </a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</Base>

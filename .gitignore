@@ -1,0 +1,20 @@
+# 依赖与构建产物
+node_modules/
+dist/
+.astro/
+
+# 本地缓存与日志
+.DS_Store
+*.log
+npm-debug.log*
+
+# 环境与凭据
+.env
+.env.*
+
+# 编辑器
+.vscode/
+.idea/
+
+# 质量门禁基线：这是需要随仓库演进的文件，不能忽略
+!patrol-baseline.json

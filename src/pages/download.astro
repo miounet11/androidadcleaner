@@ -1,0 +1,171 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../consts';
+import { SITE_STATS } from '../data/models';
+import { breadcrumb, faqPage, softwareApp } from '../lib/schema';
+
+const url = `${SITE.url}/download`;
+
+const channels = [
+  {
+    href: '/download/pc',
+    tag: '桌面端',
+    title: 'PC 客户端',
+    desc: 'Windows、macOS、Linux 图形界面。插线、检测、执行，三步完成。也提供免安装的命令行版本。',
+    meta: ['Windows 10 / 11', 'macOS 12+', 'Linux glibc 2.31+'],
+    primary: true,
+  },
+  {
+    href: '/download/ios',
+    tag: 'iOS',
+    title: 'iOS 客户端',
+    desc: '机型开关路径速查与操作进度记录。iOS 无法通过 adb 连接安卓设备，因此它做的是随身的操作手册与核对清单。',
+    meta: ['iPhone / iPad', 'iOS 16+', '离线可用'],
+    primary: false,
+  },
+  {
+    href: SITE.releases,
+    tag: '源码',
+    title: '命令行与源码',
+    desc: 'Python 3.9+ 直接运行，全部功能不依赖图形界面。代码在 GitHub 上，可自行审阅与二次开发。',
+    meta: ['pip 安装', 'MIT 协议', '全功能'],
+    primary: false,
+    external: true,
+  },
+];
+
+const steps = [
+  { n: '01', t: '下载并解压', d: '桌面端是免安装压缩包，解压后直接运行。首次启动会检查 adb 是否存在，缺失时会引导安装。' },
+  { n: '02', t: '手机开 USB 调试', d: '设置 → 关于手机 → 连点版本号 7 次 → 开发者选项 → USB 调试。部分品牌还有一层安全设置。' },
+  { n: '03', t: '插线并授权', d: '手机弹出「允许 USB 调试」时勾选「一律允许」。没弹窗通常是数据线只供电。' },
+  { n: '04', t: '检测 → 备份 → 执行', d: '先跑只读检测看清楚状态，再保存快照，最后执行机型脚本或按清单手动操作。' },
+];
+
+const faqs = [
+  {
+    q: '下载后提示「无法验证开发者」怎么办？',
+    a: 'macOS 上首次运行未签名应用会拦截。在「系统设置 → 隐私与安全性」里点「仍要打开」，或在终端执行 xattr -dr com.apple.quarantine 解压目录后重开。Windows 上 SmartScreen 提示「更多信息 → 仍要运行」。',
+  },
+  {
+    q: '需要安装 adb 吗？',
+    a: '客户端内置 adb，通常不需要单独安装。如果系统已装 adb 且版本较新，客户端会优先使用系统版本。Windows 上若识别不到设备，需要装一次厂商 USB 驱动或通用 ADB 驱动。',
+  },
+  {
+    q: '一定要用电脑吗？',
+    a: '是。去广告依赖 adb 调试通道，需要电脑作为主机。手机端无法自己给自己开调试权限。iOS 客户端提供的是清单速查，不执行操作。',
+  },
+  {
+    q: '下载收费吗？',
+    a: '免费，MIT 开源。没有高级版、没有内购、没有账号体系，也没有联网上报。',
+  },
+  {
+    q: '支持哪些手机？',
+    a: `已收录 ${SITE_STATS.brands} 个品牌共 ${SITE_STATS.models} 个机型条目，其中 ${SITE_STATS.verified} 个在真机实测通过。未收录的机型可以先用只读检测看匹配情况，或按品牌清单手动操作。`,
+  },
+  {
+    q: '原生鸿蒙 NEXT 能用吗？',
+    a: '不能。HarmonyOS NEXT 使用 HDC 而非 adb，协议不同。HarmonyOS 4 及更早版本基于 AOSP，可以使用。',
+  },
+];
+---
+
+<Base
+  title="下载：PC 客户端、iOS 与命令行"
+  description={`下载安卓去广告工具。桌面端支持 Windows、macOS、Linux，另提供 iOS 机型清单速查 App 与 Python 命令行版本。免费开源，覆盖 ${SITE_STATS.brands} 大品牌 ${SITE_STATS.models} 个机型条目。`}
+  keywords={['安卓去广告下载', 'Android Ad Cleaner 下载', 'PC 客户端', 'iOS 客户端']}
+  jsonLd={[
+    softwareApp,
+    breadcrumb([
+      { name: '首页', url: SITE.url + '/' },
+      { name: '下载', url },
+    ]),
+    faqPage(faqs),
+  ]}
+>
+  <section class="border-b border-ink-100 bg-gradient-to-b from-brand-50/40 to-white">
+    <div class="container-page py-16 sm:py-20">
+      <div class="max-w-2xl">
+        <p class="tag-brand">下载</p>
+        <h1 class="mt-4 text-[34px] leading-[1.2] font-bold sm:text-[42px]">选一个适合你的版本</h1>
+        <p class="mt-4 text-[16px] leading-relaxed text-ink-600">
+          桌面端功能最全，命令行适合批量与自动化，iOS 版把机型清单装进兜里。
+          全部免费、开源，{SITE.latestVersion} 发布于 {SITE.latestDate}。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-14">
+    <div class="grid gap-5 lg:grid-cols-3">
+      {
+        channels.map((c) => (
+          <a
+            href={c.href}
+            target={c.external ? '_blank' : undefined}
+            rel={c.external ? 'noopener' : undefined}
+            class:list={[
+              'card card-hover group flex flex-col p-6',
+              c.primary && 'ring-1 ring-brand-200',
+            ]}
+          >
+            <div class="flex items-center justify-between">
+              <span class:list={[c.primary ? 'tag-brand' : 'tag-neutral']}>{c.tag}</span>
+              {c.primary && <span class="text-[11.5px] font-medium text-brand-600">推荐</span>}
+            </div>
+            <h2 class="mt-4 text-[19px] font-bold text-ink-900">{c.title}</h2>
+            <p class="mt-2 flex-1 text-[14px] leading-relaxed text-ink-500">{c.desc}</p>
+            <ul class="mt-4 space-y-1.5">
+              {c.meta.map((m) => (
+                <li class="flex items-center gap-1.5 text-[12.5px] text-ink-500">
+                  <svg viewBox="0 0 16 16" class="h-3 w-3 shrink-0 text-brand-500" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>
+                  {m}
+                </li>
+              ))}
+            </ul>
+            <span class:list={['mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold', c.primary ? 'text-brand-600' : 'text-ink-700']}>
+              前往下载
+              <svg viewBox="0 0 16 16" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
+            </span>
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="mt-14">
+      <h2 class="text-[24px] font-bold">四步上手</h2>
+      <ol class="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          steps.map((s) => (
+            <li class="card p-5">
+              <span class="font-mono text-[12px] font-bold text-brand-400">{s.n}</span>
+              <h3 class="mt-2 text-[15.5px] font-semibold">{s.t}</h3>
+              <p class="mt-2 text-[13.5px] leading-relaxed text-ink-500">{s.d}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="mt-5 text-[13.5px] text-ink-500">
+        详细步骤见<a href="/guides/developer-mode" class="font-medium text-brand-600 hover:text-brand-700">开启开发者选项</a>与<a href="/guides/detect" class="font-medium text-brand-600 hover:text-brand-700">只读检测</a>。
+      </p>
+    </div>
+  </section>
+
+  <section class="border-t border-ink-100 bg-ink-50/50 py-14">
+    <div class="container-page">
+      <h2 class="text-[24px] font-bold">下载与安装问题</h2>
+      <dl class="mt-7 space-y-3">
+        {
+          faqs.map((f) => (
+            <div class="card p-5">
+              <dt class="text-[15px] font-semibold text-ink-900">{f.q}</dt>
+              <dd class="mt-2 text-[14px] leading-relaxed text-ink-500">{f.a}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="mt-8 text-[13.5px] text-ink-500">
+        还有其它问题？看<a href="/faq" class="font-medium text-brand-600 hover:text-brand-700">完整问答</a>或<a href={SITE.issues} target="_blank" rel="noopener" class="font-medium text-brand-600 hover:text-brand-700">提交 issue</a>。
+      </p>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,236 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../consts';
+import { SITE_STATS } from '../data/models';
+import { breadcrumb, softwareApp } from '../lib/schema';
+
+const url = `${SITE.url}/features`;
+
+const pillars = [
+  {
+    title: '只拨官方开关',
+    desc: '工具做的事，就是替你把这些藏在三四层设置里的开关逐个拨到正确位置。它不注入进程、不改系统文件。',
+    icon: 'switch',
+  },
+  {
+    title: '不 root 不刷机',
+    desc: '用 Android 官方的 adb 调试接口。不动 system 分区，系统更新照常，保修不受影响。',
+    icon: 'shield',
+  },
+  {
+    title: '每一项都能还原',
+    desc: '挂起的包一条命令恢复，通知渠道按快照回滚，App 内开关给回原路径。没有不可逆操作。',
+    icon: 'undo',
+  },
+];
+
+const capabilities = [
+  {
+    name: '机型脚本自动执行',
+    desc: '按型号与构建号匹配脚本，逐段执行并回读确认。版本不匹配时自动进入安全模式，只做能确认的步骤。',
+    detail: ['按 ro.build.display.id 前缀匹配', '每步回读验证', '失败即停，不盲点'],
+  },
+  {
+    name: '通知渠道级精准关闭',
+    desc: '关掉营销渠道，保留订单、快递、付款、日程。按渠道名与 id 判定，不确定的一律不动。',
+    detail: ['区分营销与服务渠道', '内置受保护名单', '可单独还原'],
+  },
+  {
+    name: '系统广告组件挂起',
+    desc: 'msa、opos.ads 这类没有界面开关的广告组件，用 pm suspend 挂起而非卸载，配合断网防止被重新拉起。',
+    detail: ['msa + 断网双保险', '不使用 uninstall', '重启后可重跑'],
+  },
+  {
+    name: '快应用入口关闭',
+    desc: '广告一点就跳进去的快应用，是最容易被忽略的入口。检测各厂商实现并关闭推荐位或整体入口。',
+    detail: ['小米 / OPPO / vivo 实现识别', '可只关推荐保留功能', '随时还原'],
+  },
+  {
+    name: '改动前快照',
+    desc: '记录挂起包列表、通知渠道状态与关键设置读数。出问题按快照回滚，不靠记忆。',
+    detail: ['带时间戳的本地快照', '按类别还原', '不跨设备复用'],
+  },
+  {
+    name: '只读检测先跑一遍',
+    desc: '动手前先看清楚：型号、构建号、脚本匹配情况、广告组件、渠道数量各是什么状态。检测不修改任何东西。',
+    detail: ['零写入', '版本不匹配会标黄', '报告可导出'],
+  },
+];
+
+const principles = [
+  {
+    title: '遇到协议页点取消',
+    desc: '脚本不会替你同意任何用户协议或隐私政策。遇到协议页会点取消并跳过该段。',
+  },
+  {
+    title: '跳过账号与支付页',
+    desc: '识别到登录、支付、手机号页面时直接跳过，不读取也不截图。',
+  },
+  {
+    title: '不做联网上报',
+    desc: '工具没有遥测。日志只写本地文件，诊断信息由你自己决定是否复制发送。',
+  },
+  {
+    title: '不替你决定删什么',
+    desc: '不使用 pm uninstall，不会强停其他应用，不会关闭无障碍服务，不会重启手机。',
+  },
+];
+
+const platforms = [
+  { name: 'Windows', req: '10 (1809+) / 11', note: '需要安装 adb 驱动或用通用 ADB 驱动' },
+  { name: 'macOS', req: '12 Monterey 及以上', note: 'Intel 与 Apple Silicon 通用包' },
+  { name: 'Linux', req: 'glibc 2.31+', note: '需要 udev 规则授权 USB 设备' },
+  { name: '命令行', req: 'Python 3.9+', note: '不开图形界面也能全部功能' },
+];
+---
+
+<Base
+  title="功能：它到底做了什么"
+  description="安卓去广告工具的六个核心能力：机型脚本自动执行、通知渠道级精准关闭、系统广告组件挂起、快应用入口关闭、改动前快照、只读检测。所有操作可还原。"
+  keywords={['安卓去广告功能', 'adb 关闭系统广告', '通知渠道关闭', '快应用关闭', 'msa 挂起']}
+  jsonLd={[
+    softwareApp,
+    breadcrumb([
+      { name: '首页', url: SITE.url + '/' },
+      { name: '功能', url },
+    ]),
+  ]}
+>
+  <section class="border-b border-ink-100 bg-gradient-to-b from-brand-50/40 to-white">
+    <div class="container-page py-16 sm:py-20">
+      <div class="max-w-3xl">
+        <p class="tag-brand">功能</p>
+        <h1 class="mt-4 text-[34px] leading-[1.2] font-bold sm:text-[44px]">
+          它不装插件，<br class="sm:hidden" />只是替你把开关拨对
+        </h1>
+        <p class="mt-5 text-[16px] leading-relaxed text-ink-600">
+          国产手机的系统广告几乎都有官方开关，问题在于它们散落在三层设置、六个 App 里，
+          而且每家厂商的位置都不一样。工具做的事只有一件：把这些开关按机型和版本找到，拨到正确位置，
+          再回读确认。
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="/download" class="btn-primary">下载客户端</a>
+          <a href="/guides/detect" class="btn-ghost">先看只读检测</a>
+        </div>
+      </div>
+
+      <dl class="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {
+          [
+            { k: '覆盖品牌', v: SITE_STATS.brands },
+            { k: '机型条目', v: SITE_STATS.models },
+            { k: '实测通过', v: SITE_STATS.verified },
+            { k: '可用脚本', v: SITE_STATS.scripts },
+          ].map((s) => (
+            <div class="card px-4 py-4">
+              <dt class="text-[12px] font-medium text-ink-500">{s.k}</dt>
+              <dd class="mt-1 text-[26px] font-bold tabular-nums text-brand-600">{s.v}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <section class="container-page py-16">
+    <h2 class="text-[26px] font-bold">三条底线</h2>
+    <div class="mt-8 grid gap-5 md:grid-cols-3">
+      {
+        pillars.map((p) => (
+          <div class="card card-hover p-6">
+            <h3 class="text-[17px] font-semibold">{p.title}</h3>
+            <p class="mt-2.5 text-[14px] leading-relaxed text-ink-500">{p.desc}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="border-y border-ink-100 bg-ink-50/50 py-16">
+    <div class="container-page">
+      <h2 class="text-[26px] font-bold">六项能力</h2>
+      <p class="mt-2 text-[14.5px] text-ink-500">每一项都对应一个真实存在的广告入口，不是概念包装。</p>
+      <div class="mt-9 grid gap-5 md:grid-cols-2">
+        {
+          capabilities.map((c) => (
+            <article class="card card-hover p-6">
+              <h3 class="text-[16.5px] font-semibold text-ink-900">{c.name}</h3>
+              <p class="mt-2.5 text-[14px] leading-relaxed text-ink-500">{c.desc}</p>
+              <ul class="mt-4 flex flex-wrap gap-1.5">
+                {c.detail.map((d) => (
+                  <li class="tag-neutral">{d}</li>
+                ))}
+              </ul>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-16">
+    <div class="grid gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
+      <div>
+        <h2 class="text-[26px] font-bold">它刻意不做的事</h2>
+        <p class="mt-3 text-[14.5px] leading-relaxed text-ink-500">
+          边界清楚，才敢让你在自己的主力机上跑。以下四条是有意为之的设计约束，不是尚未实现。
+        </p>
+        <a href="/guides/no-root" class="mt-6 inline-flex items-center gap-1.5 text-[14px] font-semibold text-brand-600 hover:text-brand-700">
+          为什么不需要 root
+          <svg viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
+        </a>
+      </div>
+      <ul class="space-y-3">
+        {
+          principles.map((p) => (
+            <li class="card flex gap-4 p-5">
+              <span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600">
+                <svg viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>
+              </span>
+              <div>
+                <h3 class="text-[15px] font-semibold">{p.title}</h3>
+                <p class="mt-1 text-[13.5px] leading-relaxed text-ink-500">{p.desc}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="border-t border-ink-100 py-16">
+    <div class="container-page">
+      <h2 class="text-[26px] font-bold">运行环境</h2>
+      <div class="mt-8 overflow-hidden rounded-2xl border border-ink-200">
+        <table class="w-full text-[14px]">
+          <thead class="bg-ink-50">
+            <tr>
+              <th class="px-5 py-3 text-left font-semibold text-ink-900">平台</th>
+              <th class="px-5 py-3 text-left font-semibold text-ink-900">要求</th>
+              <th class="px-5 py-3 text-left font-semibold text-ink-900">备注</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              platforms.map((p) => (
+                <tr class="border-t border-ink-100">
+                  <td class="px-5 py-3.5 font-medium text-ink-900">{p.name}</td>
+                  <td class="px-5 py-3.5 text-ink-600">{p.req}</td>
+                  <td class="px-5 py-3.5 text-ink-500">{p.note}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-12 flex flex-col items-start justify-between gap-5 rounded-2xl bg-ink-900 px-7 py-8 sm:flex-row sm:items-center">
+        <div>
+          <h2 class="text-[20px] font-bold text-white">先在只读检测上花三十秒</h2>
+          <p class="mt-1.5 text-[14px] text-ink-300">看清楚你的机型和系统版本能走到哪一步，再决定要不要动手。</p>
+        </div>
+        <a href="/download" class="btn-primary shrink-0">下载客户端</a>
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,483 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../consts';
+import { BRAND_STATS, SITE_STATS, STATUS_META } from '../data/models';
+import { softwareApp, website, organization, faqPage } from '../lib/schema';
+
+const homeFaq = [
+  {
+    q: '安卓去广告需要 root 手机吗？',
+    a: '不需要。工具只通过 adb 调用 Android 系统和厂商 App 公开提供的设置项，不 root、不解锁 Bootloader、不刷机，系统更新也不受影响。',
+  },
+  {
+    q: '关闭之后能还原吗？',
+    a: '能。改动前的包状态会做快照，挂起的包和通知渠道各一条命令即可还原；App 内的开关按清单路径手动打开。',
+  },
+  {
+    q: '会不会把快递、订单、天气预警通知一起关掉？',
+    a: '不会。营销通知按渠道关闭，同一个 App 的订单、快递、更新通知保留；天气预警、异常天气提醒也在保留名单里。',
+  },
+  {
+    q: '支持哪些手机？',
+    a: `覆盖小米 / Redmi / POCO、OPPO / 一加 / realme、vivo / iQOO、荣耀、华为（HarmonyOS 4）、三星，共 ${SITE_STATS.models} 个机型条目、${SITE_STATS.brands} 个品牌。标「实测通过」的机型有专用脚本，其他可参考同品牌清单手动操作。`,
+  },
+  {
+    q: '原生鸿蒙 NEXT 能用吗？',
+    a: '不能。HarmonyOS NEXT 使用 HDC 而不是 adb，当前工具连不上，只能在手机上按清单手动操作。',
+  },
+  {
+    q: '用哪种方式最简单？',
+    a: '不想敲命令就下载桌面客户端（Mac / Windows），插线点几下；有 AI 工具可以让它按仓库里的规范替你跑；只有手机就照品牌手动清单操作。',
+  },
+];
+
+const steps = [
+  {
+    n: '01',
+    title: '下载客户端',
+    text: 'Mac（Apple 芯片 / Intel）或 Windows 10/11，选对应安装包。已签名公证，双击就能打开。',
+    href: '/download',
+    cta: '获取安装包',
+  },
+  {
+    n: '02',
+    title: '连接手机',
+    text: '数据线连电脑，按内置图文教程打开开发者模式与 USB 调试。插上即识别型号与系统版本。',
+    href: '/guides/developer-mode',
+    cta: '开发者模式教程',
+  },
+  {
+    n: '03',
+    title: '检测与选择',
+    text: '先跑只读检测：型号、系统版本、机型脚本、快应用、广告组件。营销通知按渠道勾选，服务类默认不勾。',
+    href: '/guides/detect',
+    cta: '看检测说明',
+  },
+  {
+    n: '04',
+    title: '执行并收尾',
+    text: '进度条与实时日志，每一步给出结果；最后提醒关闭开发者模式，改动已保存快照。',
+    href: '/guides/restore',
+    cta: '还原方法',
+  },
+];
+
+const capabilities = [
+  {
+    title: '系统广告',
+    icon: 'shield',
+    desc: '个性化广告、OAID 广告跟踪、智能推荐服务，逐个开关关闭。',
+    items: ['个性化广告推荐', '广告跟踪标识', '智能推荐服务'],
+  },
+  {
+    title: '热搜与资讯',
+    icon: 'trending',
+    desc: '下拉搜索的热榜、负一屏资讯流、浏览器信息流，整块移除。',
+    items: ['搜索热榜', '负一屏推荐卡片', '浏览器信息流'],
+  },
+  {
+    title: '推广位',
+    icon: 'layout',
+    desc: '应用商店的轮播、开屏、悬浮活动、签到福利等服务管理开关。',
+    items: ['商店轮播与开屏', '悬浮活动', '签到福利'],
+  },
+  {
+    title: '营销推送',
+    icon: 'bell',
+    desc: '按通知渠道关闭，同一个 App 的订单、快递、更新通知保留。',
+    items: ['按渠道精确关闭', '服务通知保留', '保护类通知白名单'],
+  },
+  {
+    title: '广告组件',
+    icon: 'package',
+    desc: 'com.miui.systemAdSolution、com.opos.ads 等系统广告包挂起并断网。',
+    items: ['pm suspend 挂起', '断网规则回读', '一条命令还原'],
+  },
+  {
+    title: '快应用',
+    icon: 'bolt',
+    desc: '广告里一点就跳进去的免安装快应用，可检测并整体关闭。',
+    items: ['quickapp 检测', '快应用中心关闭', '跳转拦截'],
+  },
+];
+
+const notDoing = [
+  '不卸载、不停用系统应用（不用 pm uninstall、pm disable-user）',
+  '不改 system 分区，不装 Magisk 模块，不刷机',
+  '不替你同意任何 App 的用户协议，遇到协议页点「取消」',
+  '不截取账号页和手机号页，不收集应用列表与通知内容',
+];
+---
+
+<Base
+  title="安卓去广告工具 — 关闭国产手机系统广告、热搜与营销推送"
+  description={SITE.description}
+  jsonLd={[organization, website, softwareApp, faqPage(homeFaq)]}
+>
+  <!-- Hero -->
+  <section class="relative overflow-hidden border-b border-ink-200/70">
+    <div class="grid-bg absolute inset-0 opacity-70" aria-hidden="true"></div>
+    <div
+      class="absolute -top-32 left-1/2 h-[420px] w-[820px] -translate-x-1/2 rounded-full bg-brand-200/35 blur-[110px]"
+      aria-hidden="true"
+    ></div>
+
+    <div class="container-page relative py-16 md:py-24">
+      <div class="grid items-center gap-14 lg:grid-cols-12">
+        <div class="lg:col-span-7">
+          <div class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3 py-1.5 text-[12px] font-medium text-brand-700 shadow-sm backdrop-blur">
+            <span class="relative flex h-1.5 w-1.5">
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-500 opacity-70"></span>
+              <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-600"></span>
+            </span>
+            v{SITE.latestVersion} · {SITE.latestDate} 发布
+          </div>
+
+          <h1 class="mt-6 text-[34px] leading-[1.16] font-bold tracking-tight text-ink-900 sm:text-[44px] md:text-[52px]">
+            把手机里的广告<br class="hidden sm:block" />
+            <span class="text-brand-600">一次清干净</span>
+          </h1>
+
+          <p class="mt-6 max-w-xl text-[15.5px] leading-relaxed text-ink-600 sm:text-[17px]">
+            关掉国产安卓系统里的广告、热搜、资讯推荐和营销推送。只拨系统和 App 自带的开关，
+            <strong class="font-semibold text-ink-900">不 root、不刷机、不卸载</strong>，系统更新不受影响，随时可还原。
+          </p>
+
+          <div class="mt-8 flex flex-wrap items-center gap-3">
+            <a href="/download" class="btn-primary !px-6 !py-3 text-[15px]">
+              <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16" />
+              </svg>
+              下载桌面客户端
+            </a>
+            <a href="/models" class="btn-ghost !px-6 !py-3 text-[15px]">
+              查我的机型
+              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </a>
+          </div>
+
+          <dl class="mt-10 grid max-w-lg grid-cols-3 gap-4 border-t border-ink-200 pt-7">
+            <div>
+              <dt class="text-[12px] font-medium text-ink-400">适配机型</dt>
+              <dd class="mt-1 text-[26px] font-bold tracking-tight text-ink-900">{SITE_STATS.models}</dd>
+            </div>
+            <div>
+              <dt class="text-[12px] font-medium text-ink-400">覆盖品牌</dt>
+              <dd class="mt-1 text-[26px] font-bold tracking-tight text-ink-900">{SITE_STATS.brands}</dd>
+            </div>
+            <div>
+              <dt class="text-[12px] font-medium text-ink-400">实测通过</dt>
+              <dd class="mt-1 text-[26px] font-bold tracking-tight text-brand-600">{SITE_STATS.verified}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="lg:col-span-5">
+          <div class="relative">
+            <div class="absolute -inset-4 rounded-[28px] bg-gradient-to-br from-brand-200/50 via-transparent to-accent-400/25 blur-2xl" aria-hidden="true"></div>
+            <div class="relative overflow-hidden rounded-[22px] border border-ink-200 bg-white shadow-[0_30px_70px_-30px_rgba(17,24,39,.32)]">
+              <div class="flex items-center gap-2 border-b border-ink-100 bg-ink-50/80 px-4 py-2.5">
+                <span class="h-2.5 w-2.5 rounded-full bg-ink-200"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-ink-200"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-ink-200"></span>
+                <span class="ml-2 text-[11.5px] font-medium text-ink-400">安卓去广告 · 客户端</span>
+              </div>
+
+              <div class="space-y-3 p-4">
+                <div class="flex items-center justify-between rounded-xl bg-brand-50 px-3.5 py-2.5">
+                  <div class="flex items-center gap-2.5">
+                    <span class="grid h-7 w-7 place-items-center rounded-lg bg-brand-600 text-white">
+                      <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                    </span>
+                    <div>
+                      <p class="text-[12.5px] font-semibold text-ink-900">已连接 · 小米 18 Pro Max</p>
+                      <p class="text-[11px] text-ink-500">HyperOS OS4.0.24 · Android 17</p>
+                    </div>
+                  </div>
+                  <span class="tag-brand">机型脚本</span>
+                </div>
+
+                {
+                  [
+                    ['系统广告与广告跟踪', '已关闭', true],
+                    ['应用商店推广位', '已关闭', true],
+                    ['浏览器信息流', '已关闭', true],
+                    ['全局搜索热搜榜', '已关闭', true],
+                    ['负一屏推荐卡片', '已关闭', true],
+                    ['天气日历内容推广', '已关闭', true],
+                    ['营销通知渠道', '26 / 26', true],
+                    ['系统广告组件 msa', '挂起 + 断网', true],
+                  ].map(([label, value]) => (
+                    <div class="flex items-center justify-between rounded-lg border border-ink-100 px-3.5 py-2">
+                      <span class="text-[12.5px] text-ink-700">{label}</span>
+                      <span class="flex items-center gap-1.5 text-[11.5px] font-medium text-emerald-600">
+                        <svg viewBox="0 0 24 24" class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                        {value}
+                      </span>
+                    </div>
+                  ))
+                }
+
+                <div class="flex items-center justify-between rounded-xl border border-ink-100 bg-ink-50/60 px-3.5 py-2.5">
+                  <span class="text-[11.5px] text-ink-500">备份已保存 · 可一键还原</span>
+                  <span class="text-[11px] font-medium text-brand-600">完成</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Principles -->
+  <section class="border-b border-ink-200/70 bg-ink-50/50">
+    <div class="container-page py-12">
+      <div class="grid gap-6 sm:grid-cols-3">
+        {
+          [
+            ['不 root，不解锁，不刷机', '只用 adb 调用系统公开设置项，系统更新与保修都不受影响。'],
+            ['只拨开关，不做破坏', '不卸载、不停用系统应用，挂起广告包这一步要机主点头。'],
+            ['功能通知全部保留', '搜索、负一屏卡片、商店安装更新、天气预警、快递提醒都不动。'],
+          ].map(([title, desc]) => (
+            <div class="flex gap-3.5">
+              <span class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white ring-1 ring-ink-200">
+                <svg viewBox="0 0 24 24" class="h-4 w-4 text-brand-600" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              </span>
+              <div>
+                <h2 class="text-[14.5px] font-semibold text-ink-900">{title}</h2>
+                <p class="mt-1 text-[13px] leading-relaxed text-ink-500">{desc}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Capabilities -->
+  <section class="container-page py-20">
+    <div class="max-w-2xl">
+      <p class="text-[12.5px] font-semibold tracking-widest text-brand-600 uppercase">处理范围</p>
+      <h2 class="mt-3 text-[28px] leading-tight font-bold tracking-tight sm:text-[36px]">
+        六类广告入口，按系统结构逐层关闭
+      </h2>
+      <p class="mt-4 text-[15px] leading-relaxed text-ink-600">
+        国产手机的广告不是一个开关，而是散落在系统设置、商店、浏览器、搜索、负一屏和通知渠道里。
+        工具按机型脚本逐层走进去，能关的关、该留的留。
+      </p>
+    </div>
+
+    <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        capabilities.map((c) => (
+          <article class="card card-hover p-6">
+            <span class="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-700">
+              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                {c.icon === 'shield' && <path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6l7-3z" />}
+                {c.icon === 'trending' && <path d="M3 17l6-6 4 4 7-7M21 8v5h-5" />}
+                {c.icon === 'layout' && <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 10h18M9 10v10" /></>}
+                {c.icon === 'bell' && <><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 01-3.4 0" /></>}
+                {c.icon === 'package' && <><path d="M21 8l-9-5-9 5 9 5 9-5z" /><path d="M3 8v8l9 5 9-5V8" /><path d="M12 13v8" /></>}
+                {c.icon === 'bolt' && <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" />}
+              </svg>
+            </span>
+            <h3 class="mt-4 text-[16px] font-semibold text-ink-900">{c.title}</h3>
+            <p class="mt-2 text-[13.5px] leading-relaxed text-ink-500">{c.desc}</p>
+            <ul class="mt-4 space-y-1.5 border-t border-ink-100 pt-4">
+              {c.items.map((i) => (
+                <li class="flex items-center gap-2 text-[12.5px] text-ink-600">
+                  <span class="h-1 w-1 rounded-full bg-brand-400"></span>
+                  {i}
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Steps -->
+  <section class="border-y border-ink-200/70 bg-ink-900 text-white">
+    <div class="container-page py-20">
+      <div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div class="max-w-xl">
+          <p class="text-[12.5px] font-semibold tracking-widest text-brand-300 uppercase">使用流程</p>
+          <h2 class="mt-3 text-[28px] leading-tight font-bold tracking-tight text-white sm:text-[36px]">
+            插上手机，四步做完
+          </h2>
+          <p class="mt-4 text-[15px] leading-relaxed text-ink-300">
+            不需要 Python，也不需要 AI 工具。每一步都会告诉你改了什么，改完可以回读确认。
+          </p>
+        </div>
+        <a href="/guides" class="btn-ghost shrink-0 border-white/15 bg-white/5 text-white hover:border-white/25 hover:bg-white/10">
+          全部使用教程
+        </a>
+      </div>
+
+      <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          steps.map((s) => (
+            <a href={s.href} class="group rounded-2xl border border-white/10 bg-white/[.04] p-6 transition-colors hover:border-brand-400/50 hover:bg-white/[.07]">
+              <span class="font-mono text-[12px] font-semibold tracking-widest text-brand-300">{s.n}</span>
+              <h3 class="mt-3 text-[16.5px] font-semibold text-white">{s.title}</h3>
+              <p class="mt-2.5 text-[13px] leading-relaxed text-ink-300">{s.text}</p>
+              <span class="mt-4 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-brand-300 group-hover:text-brand-200">
+                {s.cta}
+                <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Models -->
+  <section class="container-page py-20">
+    <div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+      <div class="max-w-2xl">
+        <p class="text-[12.5px] font-semibold tracking-widest text-brand-600 uppercase">机型库</p>
+        <h2 class="mt-3 text-[28px] leading-tight font-bold tracking-tight sm:text-[36px]">
+          {SITE_STATS.models} 个机型条目，按系统版本归档
+        </h2>
+        <p class="mt-4 text-[15px] leading-relaxed text-ink-600">
+          同一品牌、不同系统小版本，设置页的名字和层级都会变。机型脚本按型号与版本存放，
+          版本对不上时引擎会提示并进安全模式，找不到入口的步骤跳过，不会乱点。
+        </p>
+      </div>
+      <a href="/models" class="btn-ghost shrink-0">查看完整机型库</a>
+    </div>
+
+    <div class="mt-10 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        BRAND_STATS.map((b) => (
+          <a href={`/models/${b.slug}`} class="card card-hover group flex items-center gap-4 p-5">
+            <span
+              class="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-[15px] font-bold text-white"
+              style={`background:${b.color}`}
+            >
+              {b.en.slice(0, 2).toUpperCase()}
+            </span>
+            <div class="min-w-0 flex-1">
+              <h3 class="truncate text-[14.5px] font-semibold text-ink-900 group-hover:text-brand-700">{b.name}</h3>
+              <p class="mt-0.5 text-[12px] text-ink-400">{b.osName}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-[15px] font-bold text-ink-900">{b.total}</p>
+              <p class="text-[10.5px] text-ink-400">机型</p>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="mt-8 rounded-2xl border border-ink-200 bg-ink-50/60 p-5 sm:p-6">
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <p class="text-[13px] font-semibold text-ink-900">状态说明</p>
+        {
+          Object.values(STATUS_META).map((meta) => (
+            <span class="flex items-center gap-2 text-[12.5px] text-ink-600">
+              <span class:list={['rounded-full px-2.5 py-0.5 text-[11px] font-medium ring-1 ring-inset', meta.tone]}>
+                {meta.label}
+              </span>
+              {meta.desc}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Not doing -->
+  <section class="border-t border-ink-200/70 bg-ink-50/50">
+    <div class="container-page py-20">
+      <div class="grid gap-12 lg:grid-cols-2">
+        <div>
+          <p class="text-[12.5px] font-semibold tracking-widest text-brand-600 uppercase">边界</p>
+          <h2 class="mt-3 text-[28px] leading-tight font-bold tracking-tight sm:text-[36px]">
+            明确不做的事
+          </h2>
+          <p class="mt-4 max-w-lg text-[15px] leading-relaxed text-ink-600">
+            权限越大，风险越大。这个工具刻意把能力限制在「拨动系统自带开关」的范围内，
+            越界的操作一律不做，出问题也容易恢复。
+          </p>
+          <a href="/about" class="btn-ghost mt-7">阅读完整声明</a>
+        </div>
+
+        <ul class="space-y-3">
+          {
+            notDoing.map((item) => (
+              <li class="flex items-start gap-3 rounded-xl border border-ink-200 bg-white p-4">
+                <span class="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-ink-100">
+                  <svg viewBox="0 0 24 24" class="h-3 w-3 text-ink-400" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                </span>
+                <span class="text-[13.5px] leading-relaxed text-ink-700">{item}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="container-page py-20">
+    <div class="grid gap-12 lg:grid-cols-12">
+      <div class="lg:col-span-4">
+        <p class="text-[12.5px] font-semibold tracking-widest text-brand-600 uppercase">常见问题</p>
+        <h2 class="mt-3 text-[28px] leading-tight font-bold tracking-tight sm:text-[36px]">
+          先看这些再动手
+        </h2>
+        <p class="mt-4 text-[14.5px] leading-relaxed text-ink-600">
+          还有疑问？到<a href={SITE.issues} target="_blank" rel="noopener" class="font-medium text-brand-600 underline decoration-brand-200 underline-offset-2">GitHub Issues</a> 提问，或看完整问答页。
+        </p>
+        <a href="/faq" class="btn-ghost mt-6">全部问答</a>
+      </div>
+
+      <div class="lg:col-span-8">
+        <div class="divide-y divide-ink-200 border-y border-ink-200">
+          {
+            homeFaq.map((item, i) => (
+              <details class="group py-5" open={i === 0}>
+                <summary class="flex cursor-pointer list-none items-start justify-between gap-4 text-[15px] font-semibold text-ink-900 [&::-webkit-details-marker]:hidden">
+                  <span>{item.q}</span>
+                  <span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-ink-200 text-ink-400 transition-transform group-open:rotate-45">
+                    <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                  </span>
+                </summary>
+                <p class="mt-3 pr-10 text-[14px] leading-relaxed text-ink-600">{item.a}</p>
+              </details>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="container-page pb-20">
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-700 via-brand-600 to-brand-800 px-7 py-14 text-center sm:px-14">
+      <div class="absolute inset-0 grid-bg opacity-[.12]" aria-hidden="true"></div>
+      <div class="relative">
+        <h2 class="text-[26px] font-bold tracking-tight text-white sm:text-[34px]">
+          今天就把手机清干净
+        </h2>
+        <p class="mx-auto mt-4 max-w-lg text-[14.5px] leading-relaxed text-brand-100">
+          免费开源，Mac 与 Windows 客户端已签名公证。插上数据线，几分钟做完，随时可还原。
+        </p>
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          <a href="/download" class="btn !bg-white !px-6 !py-3 text-[15px] !text-brand-700 hover:!bg-brand-50">
+            下载客户端
+          </a>
+          <a href="/guides/manual-checklist" class="btn border border-white/25 !px-6 !py-3 text-[15px] text-white hover:bg-white/10">
+            只用手机？看手动清单
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

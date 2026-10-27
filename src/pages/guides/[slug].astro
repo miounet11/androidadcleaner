@@ -1,0 +1,157 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../consts';
+import { article, breadcrumb } from '../../lib/schema';
+
+export async function getStaticPaths() {
+  const guides = await getCollection('guides');
+  return guides.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const data = entry.data;
+
+const all = await getCollection('guides');
+const sorted = all.sort((a, b) => a.data.order - b.data.order);
+const idx = sorted.findIndex((g) => g.id === entry.id);
+const prev = idx > 0 ? sorted[idx - 1] : null;
+const next = idx >= 0 && idx < sorted.length - 1 ? sorted[idx + 1] : null;
+
+const related = sorted
+  .filter((g) => g.id !== entry.id && g.data.category === data.category)
+  .slice(0, 3);
+
+const url = `${SITE.url}/guides/${entry.id}`;
+const jsonLd = [
+  article({
+    title: data.title,
+    description: data.description,
+    url,
+    published: data.updated,
+    modified: data.updated,
+  }),
+  breadcrumb([
+    { name: '首页', url: SITE.url },
+    { name: '使用教程', url: `${SITE.url}/guides` },
+    { name: data.title, url },
+  ]),
+];
+---
+
+<Base
+  title={data.title}
+  description={data.description}
+  keywords={data.keywords}
+  type="article"
+  jsonLd={jsonLd}
+  modifiedTime={data.updated}
+>
+  <div class="container-page py-10 lg:py-14">
+    <nav class="mb-8 flex items-center gap-2 text-[12.5px] text-ink-400" aria-label="面包屑">
+      <a href="/" class="hover:text-brand-600">首页</a>
+      <span aria-hidden="true">/</span>
+      <a href="/guides" class="hover:text-brand-600">使用教程</a>
+      <span aria-hidden="true">/</span>
+      <span class="text-ink-600">{data.title}</span>
+    </nav>
+
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_260px]">
+      <article>
+        <header class="border-b border-ink-200 pb-8">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="tag-brand">{data.category}</span>
+            {data.featured && <span class="tag-warn">推荐阅读</span>}
+            <span class="text-[12.5px] text-ink-400">更新于 {data.updated}</span>
+            <span class="text-[12.5px] text-ink-400">约 {data.readingTime} 分钟</span>
+          </div>
+          <h1 class="mt-4 text-[26px] leading-tight font-bold tracking-tight text-ink-900 sm:text-[32px]">
+            {data.title}
+          </h1>
+          <p class="mt-3 text-[15px] leading-relaxed text-ink-500">{data.description}</p>
+        </header>
+
+        <div class="prose-site mt-9">
+          <Content />
+        </div>
+
+        <nav class="mt-14 grid gap-3 border-t border-ink-200 pt-8 sm:grid-cols-2" aria-label="上下篇">
+          {
+            prev ? (
+              <a href={`/guides/${prev.id}`} class="card card-hover p-4">
+                <span class="text-[11.5px] text-ink-400">上一篇</span>
+                <span class="mt-1 block text-[14px] font-semibold text-ink-900">{prev.data.title}</span>
+              </a>
+            ) : (
+              <span />
+            )
+          }
+          {
+            next && (
+              <a href={`/guides/${next.id}`} class="card card-hover p-4 sm:text-right">
+                <span class="text-[11.5px] text-ink-400">下一篇</span>
+                <span class="mt-1 block text-[14px] font-semibold text-ink-900">{next.data.title}</span>
+              </a>
+            )
+          }
+        </nav>
+      </article>
+
+      <aside class="lg:sticky lg:top-24 lg:self-start">
+        <div class="card p-5">
+          <h2 class="text-[12.5px] font-semibold tracking-wider text-ink-900 uppercase">全部教程</h2>
+          <ol class="mt-4 space-y-2.5">
+            {
+              sorted.map((g) => (
+                <li>
+                  <a
+                    href={`/guides/${g.id}`}
+                    class:list={[
+                      'block text-[13px] leading-snug transition-colors',
+                      g.id === entry.id
+                        ? 'font-semibold text-brand-700'
+                        : 'text-ink-500 hover:text-brand-600',
+                    ]}
+                  >
+                    {g.data.title}
+                  </a>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+
+        <div class="card mt-4 bg-brand-50/60 p-5">
+          <p class="text-[13px] font-semibold text-ink-900">还没装工具？</p>
+          <p class="mt-1.5 text-[12.5px] leading-relaxed text-ink-500">
+            Mac / Windows 客户端插线即用，也可以直接跑命令行。
+          </p>
+          <a href="/download" class="btn-primary mt-4 w-full !py-2 !text-[13px]">前往下载</a>
+        </div>
+      </aside>
+    </div>
+
+    {
+      related.length > 0 && (
+        <section class="mt-16 border-t border-ink-200 pt-10">
+          <h2 class="text-[18px] font-bold text-ink-900">同类教程</h2>
+          <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((g) => (
+              <a href={`/guides/${g.id}`} class="card card-hover p-5">
+                <span class="tag-neutral">{g.data.category}</span>
+                <h3 class="mt-3 text-[14.5px] font-semibold text-ink-900">{g.data.title}</h3>
+                <p class="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed text-ink-500">
+                  {g.data.description}
+                </p>
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</Base>

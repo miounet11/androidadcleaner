@@ -1,0 +1,22 @@
+{
+  "name": "安卓去广告 · Android Ad Cleaner",
+  "short_name": "安卓去广告",
+  "description": "关闭国产安卓系统广告、热搜与营销推送的开源工具",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1f6c6b",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,238 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../consts';
+import { SITE_STATS } from '../data/models';
+import { breadcrumb, faqPage } from '../lib/schema';
+
+const url = `${SITE.url}/faq`;
+
+const groups = [
+  {
+    id: 'basic',
+    name: '基础认知',
+    items: [
+      {
+        q: '这个工具到底做了什么？',
+        a: '它用 Android 官方的 adb 调试接口，替你点击那些藏在设置深处的广告开关，并按通知渠道关闭营销推送、挂起没有界面开关的系统广告组件。它不安装模块、不修改系统文件、不注入进程。所有改动都能还原。',
+      },
+      {
+        q: '需要 root 吗？',
+        a: '不需要。系统广告的开关大多对普通用户开放，只是位置分散。「去广告必须 root」是十年前的情况。工具只用 adb 权限，不动 system 分区，系统更新照常。',
+      },
+      {
+        q: '会清除所有广告吗？',
+        a: '不会。它处理的是**系统级广告**：设置里的个性化推荐、应用商店推广位、负一屏卡片、锁屏推荐、通知栏营销推送、快应用跳转。App 内部信息流里的原生广告、视频前贴片不属于系统广告，工具不碰。',
+      },
+      {
+        q: '对手机有风险吗？',
+        a: '工具只做两件事：模拟点击官方开关、挂起广告组件。挂起是可逆的（pm unsuspend），不使用卸载命令。唯一需要注意的是不要在系统更新中途执行，以及操作前先备份。',
+      },
+      {
+        q: '会影响系统更新和保修吗？',
+        a: '不会。adb 是 Android 官方提供的开发者功能，使用它不修改系统完整性校验。挂起应用包不改变 system 分区，OTA 更新可以正常进行。',
+      },
+    ],
+  },
+  {
+    id: 'usage',
+    name: '使用流程',
+    items: [
+      {
+        q: '第一次用应该按什么顺序操作？',
+        a: '四步：① 开启开发者选项与 USB 调试 → ② 跑只读检测（check）看清机型、构建号、脚本匹配情况 → ③ 保存快照（backup）→ ④ 执行机型脚本（recipe）或按清单手动操作。跳过后两步中的任一步都会让出问题时难以定位。',
+      },
+      {
+        q: '检测和执行的差别是什么？',
+        a: '检测完全只读：读取型号、构建号、广告组件、通知渠道数量，不写任何东西。执行才会拨开关、关渠道、挂起包。检测是让你在动手前知道会发生什么。',
+      },
+      {
+        q: '提示「构建号不匹配」还要继续吗？',
+        a: '可以继续，但引擎会进入安全模式：只执行能确认存在的入口，找不到就跳过，不会盲点相似但不相同的按钮。执行后提示「部分完成」并列出跳过的步骤，你再用同品牌手动清单补齐就行。少关一个开关，好过点错一页设置。',
+      },
+      {
+        q: '要多久？',
+        a: '检测约 10 秒。机型脚本按段执行，完整跑一遍通常 2–5 分钟。手动按清单操作约 10–15 分钟，具体取决于机型 App 数量。',
+      },
+      {
+        q: '必须用电脑吗？',
+        a: '是。adb 需要一台主机，手机无法给自己开调试权限。如果手里没有电脑，可以按[手动清单](/guides/manual-checklist)直接在手机上操作，能覆盖大部分系统开关，只是通知渠道和系统广告组件那部分做不了。',
+      },
+    ],
+  },
+  {
+    id: 'compat',
+    name: '兼容与机型',
+    items: [
+      {
+        q: `支持哪些品牌？`,
+        a: `已收录 ${SITE_STATS.brands} 个品牌：小米 / Redmi / POCO、OPPO / 一加、vivo / iQOO、荣耀、华为、三星、realme，共 ${SITE_STATS.models} 个机型条目。其中 ${SITE_STATS.verified} 个有真机实测记录，其余为同系参考或待验证。`,
+      },
+      {
+        q: '我的机型不在列表里怎么办？',
+        a: '先用只读检测看能不能识别。同一品牌同一系统底包的机型，设置路径高度相似，可以按品牌清单手动操作。如果确实不同，可以在 GitHub 提 issue 附上构建号和路径，或按[写脚本指南](/guides/write-recipe)贡献一份。',
+      },
+      {
+        q: '原生鸿蒙 NEXT 支持吗？',
+        a: '不支持。HarmonyOS NEXT（5.0 起）使用 HDC 协议而非 adb，工具无法连接。HarmonyOS 4 及更早版本基于 AOSP，adb 可用。',
+      },
+      {
+        q: 'iPhone 能用吗？',
+        a: 'iOS 无法作为主机连接安卓设备，所以 iOS 客户端提供的是机型清单速查与操作核对，不执行自动操作。iOS 系统本身也没有这类需要处理的系统广告入口。',
+      },
+      {
+        q: '系统升级后要重做吗？',
+        a: '建议重跑一次检测。大版本升级可能新增广告入口、调整设置层级，也可能让之前挂起的包被重新激活。重跑前先备份，这样旧快照还能用来对比。',
+      },
+      {
+        q: '同一台手机可以给多台设备用吗？',
+        a: '工具一次连接一台设备，通过序列号区分。多设备可以轮流连接，每台设备分别备份。快照与型号、构建号绑定，不能跨设备套用。',
+      },
+    ],
+  },
+  {
+    id: 'trouble',
+    name: '故障排查',
+    items: [
+      {
+        q: '提示读屏失败 / 无法读取页面怎么办？',
+        a: '最常见的原因是其它自动化工具占用了 UiAutomation：GKD、自动记账、Shizuku 相关功能。临时停用其中一个再重试，而不是全部关掉。其次检查 USB 调试（安全设置）是否开启。详见[读屏失败排查](/guides/troubleshooting)。',
+      },
+      {
+        q: '手机连不上电脑？',
+        a: '按顺序排查：① 换一根支持数据传输的线（很多原装线只供电）；② 换 USB 口，优先主板直出；③ adb kill-server 后重连；④ 在开发者选项里「撤销 USB 调试授权」再插；⑤ Windows 上确认 USB 驱动已装。',
+      },
+      {
+        q: '关掉之后广告还在？',
+        a: '先分类：如果是通知栏推送，跑 channels --apply；如果点开是「没有地址栏的页面」，那是快应用，见[快应用](/guides/quickapp)；如果是 App 内的信息流广告，那不属于系统广告，工具不处理。系统广告组件相关见[msa 与 opos.ads](/guides/system-ad-package)。',
+      },
+      {
+        q: '执行到一半失败了怎么办？',
+        a: '工具失败即停，不会继续盲点。已完成的部分有效，未完成的部分跳过。先跑 backup 存一个当前状态，再按失败步骤名用[手动清单](/guides/manual-checklist)补齐。提 issue 时带上这一步的名字和完整诊断。',
+      },
+      {
+        q: '想全部还原怎么做？',
+        a: 'restore --all 按快照回滚挂起的包、通知渠道和快应用状态。App 内的开关系统不提供读取接口，需要按清单原路手动打开。详见[完整还原](/guides/restore)。',
+      },
+    ],
+  },
+  {
+    id: 'privacy',
+    name: '隐私与安全',
+    items: [
+      {
+        q: '工具会上传我的数据吗？',
+        a: '不会。没有遥测、没有账号体系、没有联网上报。日志只写本地文件。失败时提供的「完整诊断」包含异常堆栈和系统版本，序列号与用户目录会脱敏，是否发送由你自己决定。',
+      },
+      {
+        q: '会读取短信、通讯录、相册吗？',
+        a: '不会。工具只读取当前界面（你用 adb 也能做同样的事），遇到登录页、支付页、验证码页会直接跳过，不读取也不截图。',
+      },
+      {
+        q: '会替我同意用户协议吗？',
+        a: '不会。遇到协议页或隐私政策页，脚本点「取消」并跳过该段。这是刻意的约束，写在了执行引擎里。',
+      },
+      {
+        q: '代码可以自己审吗？',
+        a: `可以。工具代码在 ${SITE.toolRepo}，MIT 协议；站点源码在 ${SITE.repo}。核心执行逻辑、机型脚本、安全模式判定都在工具仓库里。发现问题欢迎提 issue。`,
+      },
+    ],
+  },
+];
+
+const allFaqs = groups.flatMap((g) => g.items);
+---
+
+<Base
+  title="常见问题"
+  description={`关于安卓去广告工具的常见问题：是否需要 root、会不会影响系统更新和保修、支持哪些品牌机型、读屏失败怎么排查、如何完整还原。${allFaqs.length} 个问题的直接答案。`}
+  keywords={['安卓去广告常见问题', '去广告 root 吗', 'adb 去广告安全吗', '系统广告关闭失败']}
+  jsonLd={[
+    faqPage(allFaqs),
+    breadcrumb([
+      { name: '首页', url: SITE.url + '/' },
+      { name: '常见问题', url },
+    ]),
+  ]}
+>
+  <section class="border-b border-ink-100 bg-gradient-to-b from-brand-50/40 to-white">
+    <div class="container-page py-14 sm:py-16">
+      <div class="max-w-2xl">
+        <p class="tag-brand">问答</p>
+        <h1 class="mt-4 text-[32px] leading-tight font-bold sm:text-[40px]">常见问题</h1>
+        <p class="mt-4 text-[15.5px] leading-relaxed text-ink-600">
+          每个问题都给直接答案，不绕。找不到答案可以看
+          <a href="/guides" class="font-medium text-brand-600 hover:text-brand-700">教程库</a>
+          或
+          <a href={SITE.issues} target="_blank" rel="noopener" class="font-medium text-brand-600 hover:text-brand-700">提交 issue</a>。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="container-page py-12">
+    <div class="grid gap-10 lg:grid-cols-[200px_1fr] lg:gap-14">
+      <nav class="lg:sticky lg:top-24 lg:self-start" aria-label="问题分类">
+        <p class="text-[11.5px] font-semibold tracking-wider text-ink-400 uppercase">分类</p>
+        <ul class="mt-3 space-y-1">
+          {
+            groups.map((g) => (
+              <li>
+                <a
+                  href={`#${g.id}`}
+                  class="flex items-center justify-between rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-600 hover:bg-ink-50 hover:text-brand-700"
+                >
+                  {g.name}
+                  <span class="text-[11.5px] tabular-nums text-ink-400">{g.items.length}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="space-y-12">
+        {
+          groups.map((g) => (
+            <section id={g.id} class="scroll-mt-24">
+              <h2 class="text-[21px] font-bold">{g.name}</h2>
+              <div class="mt-5 space-y-2.5">
+                {g.items.map((item) => (
+                  <details class="card group overflow-hidden p-0">
+                    <summary class="flex cursor-pointer list-none items-start justify-between gap-4 px-5 py-4 hover:bg-ink-50/60">
+                      <h3 class="text-[15px] font-semibold leading-snug text-ink-900">{item.q}</h3>
+                      <svg
+                        viewBox="0 0 16 16"
+                        class="mt-1 h-4 w-4 shrink-0 text-ink-400 transition-transform group-open:rotate-45"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M8 3v10M3 8h10" />
+                      </svg>
+                    </summary>
+                    <div class="border-t border-ink-100 px-5 py-4">
+                      <p class="text-[14px] leading-[1.8] text-ink-600">{item.a}</p>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </section>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="mt-16 rounded-2xl border border-ink-200 bg-ink-50/60 px-7 py-8 text-center">
+      <h2 class="text-[19px] font-bold">没找到答案？</h2>
+      <p class="mx-auto mt-2 max-w-lg text-[14px] leading-relaxed text-ink-500">
+        提 issue 时附上机型、构建号、执行的命令和完整诊断，通常一次往返就能定位问题。
+      </p>
+      <div class="mt-5 flex flex-wrap justify-center gap-3">
+        <a href={SITE.issues} target="_blank" rel="noopener" class="btn-primary">提交 issue</a>
+        <a href="/guides/report-issue" class="btn-ghost">怎样描述问题</a>
+      </div>
+    </div>
+  </div>
+</Base>

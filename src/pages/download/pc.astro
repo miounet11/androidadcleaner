@@ -1,0 +1,292 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../consts';
+import { breadcrumb, faqPage, softwareApp } from '../../lib/schema';
+
+const url = `${SITE.url}/download/pc`;
+
+// 已构建、冒烟测试通过并上传的产物；其余平台给出源码构建方式
+const BUILT = [
+  {
+    tag: 'arm64',
+    os: 'macOS',
+    arch: 'Apple Silicon（M1 及以后）',
+    file: 'AndroidAdCleaner-0.2.3-fork-5687b0e-mac-arm64.dmg',
+    size: '32.2 MB',
+    href: '/downloads/AndroidAdCleaner-0.2.3-fork-5687b0e-mac-arm64.dmg',
+    sha256: '5687b0eaeaab28d2c6b6b305ef1c83b08f4dcdc239c001f490adac3cf03fc38e',
+    primary: true,
+  },
+  {
+    tag: 'intel',
+    os: 'macOS（Intel）',
+    arch: 'Intel 芯片',
+    file: 'AndroidAdCleaner-0.2.3-fork-9372899-mac-intel.dmg',
+    size: '37.5 MB',
+    href: '/downloads/AndroidAdCleaner-0.2.3-fork-9372899-mac-intel.dmg',
+    sha256: '9372899c7c4067eb325ddfd334cd1568cd33e8820eac6485afc4d7242b70ba89',
+    primary: false,
+  },
+  {
+    tag: 'win-setup',
+    os: 'Windows',
+    arch: '安装版（推荐）',
+    file: 'AndroidAdCleaner-0.2.3-fork-7d74993-windows-setup.exe',
+    size: '28.7 MB',
+    href: '/downloads/AndroidAdCleaner-0.2.3-fork-7d74993-windows-setup.exe',
+    sha256: '7d74993e13f7a79307fe6f1e5b4e7be91930698bb4fa6283563e1ef4b1655fe1',
+    primary: true,
+    note: '安装到 Program Files，带开始菜单与卸载入口。未签名，SmartScreen 会提示「更多信息 → 仍要运行」。',
+  },
+  {
+    tag: 'win-portable',
+    os: 'Windows（便携版）',
+    arch: '免安装',
+    file: 'AndroidAdCleaner-0.2.3-fork-477d5c1-windows-portable.zip',
+    size: '42.7 MB',
+    href: '/downloads/AndroidAdCleaner-0.2.3-fork-477d5c1-windows-portable.zip',
+    sha256: '477d5c11b9b810ca97806d916caa9a888c26331120f54e30d00531b31bb0f8ea',
+    primary: false,
+    note: '解压后直接运行 AndroidAdCleaner.exe，不写注册表、不需要管理员权限。',
+  },
+];
+
+const MAC_NOTE = '未签名版本，首次打开需在「系统设置 → 隐私与安全性」底部点「仍要打开」。';
+
+const platforms = [
+  ...BUILT.map((b) => ({
+    os: b.os,
+    req: b.tag.startsWith('win')
+      ? 'Windows 10 1809 及以上 / Windows 11'
+      : `macOS 12 Monterey 及以上，${b.arch}`,
+    file: b.file,
+    build: b.size,
+    href: b.href,
+    sha256: b.sha256,
+    primary: b.primary,
+    note: b.note ?? MAC_NOTE,
+  })),
+  {
+    os: 'Linux',
+    req: 'Ubuntu 22.04+ / Debian 12+ / Fedora 39+',
+    file: 'gui/app.py',
+    build: 'python3 gui/app.py',
+    href: SITE.toolRepo,
+    primary: false,
+    note: '直接用 Python 运行，依赖 adb 与 uiautomator2，见仓库 requirements.txt。',
+  },
+];
+
+const features = [
+  { t: '图形化流程', d: '插线 → 检测 → 备份 → 执行，四步点完，不需要记命令。' },
+  { t: '自动准备 adb', d: '首次连接时自动检测，缺失则从 Google 官方地址下载 platform-tools。' },
+  { t: '逐步可停', d: '每个段单独显示结果，中途可以停在某一段不再继续。' },
+  { t: '一键还原', d: '读取本地快照，把挂起的包和通知渠道恢复原状。' },
+  { t: '离线运行', d: '不联网上报，日志只存本地，诊断信息由你手动复制。' },
+  { t: '开源可审计', d: 'MIT 许可，客户端与引擎同一仓库，可自己编译核对。' },
+];
+
+const steps = [
+  { n: '01', t: '下载并安装', d: '选择对应系统版本，安装过程不需要关闭杀毒软件。' },
+  { n: '02', t: '手机开启 USB 调试', d: '见开发者选项教程。小米需额外开「USB 调试（安全设置）」。' },
+  { n: '03', t: '插线并授权', d: '手机弹出授权框时勾选「一律允许」，再点确定。' },
+  { n: '04', t: '检测并备份', d: '客户端会自动识别机型，匹配脚本后提示保存快照。' },
+  { n: '05', t: '执行', d: '分品牌分组展示开关项，可全选，也可只勾选想关的那几项。' },
+];
+
+const faqs = [
+  {
+    q: '客户端会不会偷偷上传我的数据？',
+    a: '不会。客户端没有联网上报逻辑，日志和快照都只写在本地数据目录。诊断信息由你手动复制，且序列号、用户目录会脱敏。源码可自行核对。',
+  },
+  {
+    q: '为什么 Windows 版比命令行版大这么多？',
+    a: '因为安装包里打包了 adb（platform-tools）和界面框架。命令行版只有 Python 脚本，需要系统里已有 adb。',
+  },
+  {
+    q: 'Mac 提示「无法验证开发者」怎么办？',
+    a: '在「系统设置 → 隐私与安全性」页面底部点「仍要打开」，或在终端执行 sudo xattr -dr com.apple.quarantine /Applications/安卓去广告.app。',
+  },
+  {
+    q: '客户端和命令行功能一样吗？',
+    a: '核心引擎相同。客户端覆盖常用流程（检测、备份、执行、还原），少数调试命令（如 explore 抓页面）只在命令行提供。',
+  },
+  {
+    q: '支持 M 系列芯片的 Mac 吗？',
+    a: '支持，但要选对包：Apple Silicon 用 arm64 版，Intel 用 intel 版，两个 dmg 是各自架构的单架构构建，不通用。',
+  },
+];
+
+const jsonLd = [
+  softwareApp,
+  breadcrumb([
+    { name: '首页', url: SITE.url + '/' },
+    { name: '下载', url: SITE.url + '/download' },
+    { name: 'PC 客户端', url },
+  ]),
+  faqPage(faqs.map((f) => ({ q: f.q, a: f.a }))),
+];
+---
+
+<Base
+  title="PC 客户端下载 — Windows / macOS / Linux"
+  description="安卓去广告桌面客户端：开源 Python 图形界面，macOS（Apple Silicon / Intel）与 Windows（安装版 / 便携版）提供预编译包。不 root 不刷机，图形化完成检测、备份、执行和还原。"
+  keywords={['安卓去广告客户端', 'PC 去广告工具', 'Windows 安卓去广告', 'macOS adb 工具']}
+  jsonLd={jsonLd}
+  type="product"
+>
+  <section class="border-b border-ink-200 bg-gradient-to-b from-brand-50/60 to-white">
+    <div class="container-page py-14 md:py-20">
+      <nav aria-label="面包屑" class="mb-6 flex items-center gap-2 text-[12.5px] text-ink-400">
+        <a href="/" class="hover:text-brand-600">首页</a>
+        <span>/</span>
+        <a href="/download" class="hover:text-brand-600">下载</a>
+        <span>/</span>
+        <span class="text-ink-600">PC 客户端</span>
+      </nav>
+
+      <div class="max-w-3xl">
+        <span class="tag-brand">桌面客户端 · v{SITE.latestVersion}</span>
+        <h1 class="mt-4 text-[32px] leading-tight font-bold tracking-tight text-ink-900 md:text-[42px]">
+          PC 客户端：点四下，把系统广告关干净
+        </h1>
+        <p class="mt-4 text-[15.5px] leading-relaxed text-ink-600">
+          插上数据线，选一个品牌分组，剩下的交给客户端。它会识别你的机型、匹配脚本、提示备份，然后逐项拨开关并回读确认。所有改动都能从同一界面还原。
+        </p>
+        <p class="mt-3 text-[13.5px] leading-relaxed text-ink-500">
+          客户端是开源的 Python 桌面程序，源码与打包脚本都在仓库里；macOS 与 Windows 已提供预编译包，Linux 可直接运行源码。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page -mt-6 pb-16">
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {
+        platforms.map((p) => (
+          <div class:list={['card card-hover p-6', p.primary ? 'ring-2 ring-brand-500/40' : '']}>
+            {p.primary && <span class="tag-brand mb-3">推荐</span>}
+            <h2 class="text-[17px] font-bold text-ink-900">{p.os}</h2>
+            <p class="mt-1.5 text-[12.5px] leading-relaxed text-ink-500">{p.req}</p>
+
+            <div class="mt-4 rounded-lg bg-ink-50 px-3 py-2.5">
+              <p class="truncate font-mono text-[11.5px] text-ink-600">{p.file}</p>
+              <p class="mt-1 truncate font-mono text-[11px] text-ink-400">{p.build}</p>
+            </div>
+
+            <a
+              href={p.href}
+              target={p.href.startsWith('http') ? '_blank' : undefined}
+              rel={p.href.startsWith('http') ? 'noopener' : undefined}
+              class:list={['mt-4 w-full', p.primary ? 'btn-primary' : 'btn-ghost']}
+            >
+              {p.href.startsWith('/downloads/')
+                ? (p.os.includes('（') ? `下载 ${p.os}` : `下载 ${p.os} 版`)
+                : '在 GitHub 获取源码'}
+            </a>
+            <p class="mt-3 text-[12px] leading-relaxed text-ink-400">{p.note}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="mt-6 rounded-xl border border-ink-200 bg-white p-4">
+      <p class="text-[12px] font-semibold tracking-wider text-ink-400 uppercase">SHA-256 校验值</p>
+      <dl class="mt-3 space-y-3">
+        {
+          BUILT.map((b) => (
+            <div>
+              <dt class="font-mono text-[11.5px] text-ink-500">{b.file}</dt>
+              <dd class="mt-0.5 break-all font-mono text-[11.5px] leading-relaxed text-ink-600">{b.sha256}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="mt-3 text-[12px] text-ink-500">
+        下载后可用 <code class="font-mono">shasum -a 256 文件名</code> 核对。不匹配就不要打开。
+      </p>
+    </div>
+
+    <div class="mt-6 rounded-2xl border border-amber-200 bg-amber-50/70 p-5">
+      <p class="text-[13.5px] leading-relaxed text-amber-900">
+        <strong class="font-semibold">当前状态：</strong>
+        macOS 两个芯片版本与 Windows 安装版、便携版均已提供预编译包，由本站构建并托管，每个包都通过了启动冒烟测试。Linux 请按卡片中的命令自行运行源码。想立刻上手也可以先走命令行版，见页面底部。
+      </p>
+    </div>
+
+    <div class="mt-4 rounded-2xl border border-ink-200 bg-white p-5">
+      <p class="text-[13.5px] leading-relaxed text-ink-600">
+        <strong class="font-semibold text-ink-900">来源与许可：</strong>
+        本项目基于开源项目
+        <a href="https://github.com/rddmwmddr/android-ad-cleaner" target="_blank" rel="noopener" class="text-brand-600 underline underline-offset-2">android-ad-cleaner</a>
+        （作者 rddmwmddr，MIT License）衍生。本站发布的安装包由本站自行编译，Bundle Identifier 为
+        <code class="font-mono text-[12.5px]">com.androidadcleaner.desktop</code>，版本号带
+        <code class="font-mono text-[12.5px]">-fork</code> 标记，与原项目发布的正式包相互独立，未使用原作者的签名证书。
+        MIT 要求保留原版权与许可声明，LICENSE 与 NOTICE 已随安装包一并分发。
+      </p>
+    </div>
+  </section>
+
+  <section class="border-y border-ink-200 bg-ink-50/40 py-16">
+    <div class="container-page">
+      <h2 class="text-[24px] font-bold tracking-tight text-ink-900">客户端做了什么</h2>
+      <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          features.map((f) => (
+            <div class="card p-5">
+              <h3 class="text-[14.5px] font-semibold text-ink-900">{f.t}</h3>
+              <p class="mt-2 text-[13px] leading-relaxed text-ink-500">{f.d}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-16">
+    <h2 class="text-[24px] font-bold tracking-tight text-ink-900">五步完成</h2>
+    <ol class="mt-8 grid gap-4 lg:grid-cols-5">
+      {
+        steps.map((s) => (
+          <li class="card p-5">
+            <span class="font-mono text-[11.5px] font-semibold text-brand-600">{s.n}</span>
+            <h3 class="mt-2 text-[14px] font-semibold text-ink-900">{s.t}</h3>
+            <p class="mt-2 text-[12.5px] leading-relaxed text-ink-500">{s.d}</p>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="mt-6 text-[13px] text-ink-500">
+      第一次用建议先读<a href="/guides/developer-mode" class="text-brand-600 underline underline-offset-2">开启 USB 调试</a>与<a href="/guides/backup" class="text-brand-600 underline underline-offset-2">备份说明</a>。
+    </p>
+  </section>
+
+  <section class="border-t border-ink-200 bg-ink-50/40 py-16">
+    <div class="container-page max-w-3xl">
+      <h2 class="text-[24px] font-bold tracking-tight text-ink-900">客户端常见问题</h2>
+      <div class="mt-6 divide-y divide-ink-200">
+        {
+          faqs.map((f) => (
+            <details class="group py-4">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-[14.5px] font-medium text-ink-900">
+                {f.q}
+                <span class="text-ink-400 transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <p class="mt-3 text-[13.5px] leading-relaxed text-ink-600">{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-16">
+    <div class="rounded-2xl bg-ink-900 px-6 py-10 text-center md:px-12">
+      <h2 class="text-[22px] font-bold text-white">不想装客户端？命令行版同样完整</h2>
+      <p class="mx-auto mt-3 max-w-xl text-[13.5px] leading-relaxed text-ink-300">
+        Python 脚本，一条命令跑完。适合服务器、CI 或者就是想看代码的人。
+      </p>
+      <a href="/download#cli" class="btn-primary mt-6">查看命令行版</a>
+    </div>
+  </section>
+</Base>

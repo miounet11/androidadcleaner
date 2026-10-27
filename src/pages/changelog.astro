@@ -1,0 +1,197 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../consts';
+import { breadcrumb } from '../lib/schema';
+
+const url = `${SITE.url}/changelog`;
+
+const releases = [
+  {
+    version: '0.2.3',
+    date: '2026-10-25',
+    tag: '当前版本',
+    highlights: [
+      '新增 Xiaomi 18 Fold 机型脚本，兼容新旧两套应用商店入口',
+      '一加 Ace 2 Pro 真机完成操作与回读，23 个营销渠道通过',
+      '安全模式改进：构建号前缀不匹配时不再尝试跨页跳转',
+      '诊断信息新增 HyperOS 版本字段',
+    ],
+    sections: [
+      {
+        title: '新增',
+        items: [
+          'recipes/xiaomi-2608BPX34C：折叠屏机型，截图自动指定主屏',
+          'recipes/oneplus-PJA110：四段脚本，商店推广位跨页回读',
+          'channels 命令支持 --dry-run，只列清单不执行',
+        ],
+      },
+      {
+        title: '修复',
+        items: [
+          '修复 vivo 负一屏在 OriginOS 6 上「便捷生活推荐服务」被误判为营销渠道的问题',
+          '修复荣耀截图坐标越界导致读取空白的情况，加入裁剪保护',
+          '修复部分机型 pm suspend 后未回读确认状态的问题',
+        ],
+      },
+      {
+        title: '变更',
+        items: [
+          '「限制广告跟踪」类反向开关统一由引擎识别，脚本不再单独判断',
+          '遇到协议页改为点取消并跳过，不中断整段执行',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.2.2',
+    date: '2026-10-23',
+    tag: null,
+    highlights: [
+      '荣耀 Magic7 Pro 实测通过，26 个营销渠道关闭',
+      'OPPO Find N6 路径逐项实测，梳理 30 个营销渠道',
+      '新增快应用检测与关闭',
+    ],
+    sections: [
+      {
+        title: '新增',
+        items: [
+          'quickapp 命令：检测小米 / OPPO / vivo 的快应用实现并提供关闭选项',
+          'support 只开推荐、保留快应用功能的模式',
+          'backup 支持按类别导出为 JSON',
+        ],
+      },
+      {
+        title: '修复',
+        items: [
+          '修复 OPPO 广告跟踪页在条目超过 100 时只读取首屏的问题',
+          '修复小米下载管理「信息流设置」在新版本中位置变化导致定位失败',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.2.1',
+    date: '2026-10-21',
+    tag: null,
+    highlights: [
+      '新增只读检测（check）与读屏连通检查（ui-check）',
+      'UI 增加「只读检测」与「保存快照」按钮',
+    ],
+    sections: [
+      {
+        title: '新增',
+        items: [
+          'check 命令：输出型号、构建号、脚本匹配、广告组件、渠道统计',
+          'ui-check 命令：3 秒内确认能否读取页面，不输出内容',
+          'restore 支持 --packages / --channels / --quickapp 分类还原',
+        ],
+      },
+      {
+        title: '修复',
+        items: ['修复 macOS 上新版 adb 路径识别失败导致找不到设备'],
+      },
+    ],
+  },
+  {
+    version: '0.2.0',
+    date: '2026-10-18',
+    tag: null,
+    highlights: [
+      '首个带图形界面的版本，支持 Windows / macOS / Linux',
+      '引入机型脚本与安全模式判定',
+    ],
+    sections: [
+      {
+        title: '新增',
+        items: [
+          '桌面客户端：插线识别、一键检测、分段执行、进度显示',
+          '安全模式：构建号不匹配时只执行可确认的步骤',
+          '内置 adb，无需单独安装',
+        ],
+      },
+      {
+        title: '移除',
+        items: ['移除实验性的 pm uninstall 路径，改为只使用 pm suspend'],
+      },
+    ],
+  },
+];
+---
+
+<Base
+  title="更新记录"
+  description="安卓去广告工具的版本更新记录：新增机型脚本、修复的系统版本适配问题、行为变更与移除的功能。"
+  keywords={['Android Ad Cleaner 更新', '更新日志', '版本发布']}
+  jsonLd={[
+    breadcrumb([
+      { name: '首页', url: SITE.url + '/' },
+      { name: '更新记录', url },
+    ]),
+  ]}
+>
+  <section class="border-b border-ink-100 bg-gradient-to-b from-brand-50/40 to-white">
+    <div class="container-page py-14 sm:py-16">
+      <div class="max-w-2xl">
+        <p class="tag-brand">更新记录</p>
+        <h1 class="mt-4 text-[32px] leading-tight font-bold sm:text-[40px]">每个版本改了什么</h1>
+        <p class="mt-4 text-[15.5px] leading-relaxed text-ink-600">
+          当前版本 {SITE.latestVersion}，发布于 {SITE.latestDate}。完整发布包在
+          <a href={SITE.releases} target="_blank" rel="noopener" class="font-medium text-brand-600 hover:text-brand-700">GitHub Releases</a>。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="container-page py-12">
+    <div class="relative space-y-10 border-l border-ink-200 pl-6 sm:pl-8">
+      {
+        releases.map((r) => (
+          <article class="relative">
+            <span class="absolute top-1.5 -left-[31px] h-3 w-3 rounded-full border-2 border-white bg-brand-400 ring-1 ring-brand-200 sm:-left-[39px]" />
+            <header class="flex flex-wrap items-center gap-2.5">
+              <h2 class="font-mono text-[19px] font-bold text-ink-900">v{r.version}</h2>
+              {r.tag && <span class="tag-brand">{r.tag}</span>}
+              <time class="text-[12.5px] text-ink-400">{r.date}</time>
+            </header>
+
+            <ul class="mt-3 space-y-1.5">
+              {r.highlights.map((h) => (
+                <li class="flex gap-2 text-[14px] leading-relaxed text-ink-700">
+                  <span class="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand-400" />
+                  {h}
+                </li>
+              ))}
+            </ul>
+
+            <div class="mt-5 space-y-4 rounded-xl border border-ink-200 bg-ink-50/50 p-5">
+              {r.sections.map((s) => (
+                <div>
+                  <h3 class="text-[12px] font-semibold tracking-wider text-ink-500 uppercase">{s.title}</h3>
+                  <ul class="mt-2 space-y-1">
+                    {s.items.map((i) => (
+                      <li class="flex gap-2 text-[13.5px] leading-relaxed text-ink-600">
+                        <span class="text-ink-300">·</span>
+                        {i}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </article>
+        ))
+      }
+    </div>
+
+    <div class="mt-14 rounded-2xl border border-ink-200 bg-white px-7 py-7 text-center">
+      <h2 class="text-[18px] font-bold">遇到问题？</h2>
+      <p class="mx-auto mt-2 max-w-md text-[14px] leading-relaxed text-ink-500">
+        机型不适配、路径变化、执行失败，都可以提 issue。附上构建号和完整诊断能显著加快处理。
+      </p>
+      <div class="mt-5 flex flex-wrap justify-center gap-3">
+        <a href={SITE.issues} target="_blank" rel="noopener" class="btn-primary">提交 issue</a>
+        <a href="/guides/report-issue" class="btn-ghost">反馈模板</a>
+      </div>
+    </div>
+  </div>
+</Base>

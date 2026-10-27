@@ -1,0 +1,194 @@
+---
+import Base from '../../layouts/Base.astro';
+import { BRANDS, MODELS, SITE_STATS, STATUS_META } from '../../data/models';
+import { breadcrumb, deviceItemList, faqPage } from '../../lib/schema';
+
+const crumb = breadcrumb([
+  { name: '首页', url: '/' },
+  { name: '机型库', url: '/models' },
+]);
+
+const listSchema = deviceItemList(MODELS, '/models');
+
+const faq = [
+  {
+    q: '机型没在列表里怎么办？',
+    a: '先跑通用只读检测：多数系统设置入口在同一品牌内是一致的。确认入口位置后可以照同品牌清单手动操作，也可以按「给新机型写脚本」的教程录一份机型脚本并提交 PR。',
+  },
+  {
+    q: '「实测通过」和「同系参考」有什么区别？',
+    a: '实测通过表示有专用机型脚本，并在真实设备上完整跑通、关键开关回读确认；同系参考表示没有专用脚本，但可沿用同品牌已实测机型的设置路径。',
+  },
+  {
+    q: '同一机型换个系统版本还能用吗？',
+    a: '机型脚本按型号与系统版本归档。版本号对不上时引擎会提示并进入安全模式：只执行能确认的入口，找不到就跳过，不会乱点。',
+  },
+];
+
+const byBrand = BRANDS.map((b) => ({
+  ...b,
+  models: MODELS.filter((m) => m.brand === b.slug),
+}));
+---
+
+<Base
+  title="适配机型库 — 各品牌安卓手机去广告设置路径与脚本状态"
+  description={`覆盖 ${SITE_STATS.brands} 个品牌、${SITE_STATS.models} 个机型条目的安卓去广告适配库。按小米 HyperOS、OPPO ColorOS、vivo OriginOS、荣耀 MagicOS、华为 HarmonyOS、三星 One UI 分别列出设置路径、脚本状态与验证范围。`}
+  keywords={['机型库', 'HyperOS 去广告机型', 'ColorOS 关闭广告', 'OriginOS 广告关闭', 'MagicOS 去广告']}
+  jsonLd={[crumb, listSchema, faqPage(faq)]}
+>
+  <section class="border-b border-ink-200/70 bg-ink-50/50">
+    <div class="container-page py-12 md:py-16">
+      <nav aria-label="面包屑" class="text-[12.5px] text-ink-400">
+        <a href="/" class="hover:text-brand-600">首页</a>
+        <span class="mx-2">/</span>
+        <span class="text-ink-700">机型库</span>
+      </nav>
+
+      <h1 class="mt-5 max-w-3xl text-[30px] leading-tight font-bold tracking-tight sm:text-[40px]">
+        适配机型库
+      </h1>
+      <p class="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-600">
+        设置页的名字和层级随品牌、系统小版本变化，所以每个机型单独记录。
+        下表按品牌分组，标出「是否有专用脚本」和「验证到哪一步」——
+        同品牌不同机型可以参考已实测机型的路径。
+      </p>
+
+      <dl class="mt-9 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-4">
+        {
+          [
+            ['机型条目', SITE_STATS.models],
+            ['覆盖品牌', SITE_STATS.brands],
+            ['实测通过', SITE_STATS.verified],
+            ['专用脚本', SITE_STATS.scripts],
+          ].map(([k, v]) => (
+            <div class="rounded-xl border border-ink-200 bg-white px-4 py-3">
+              <dt class="text-[11.5px] font-medium text-ink-400">{k}</dt>
+              <dd class="mt-0.5 text-[22px] font-bold text-ink-900">{v}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <section class="container-page py-12">
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        byBrand.map((b) => (
+          <a href={`/models/${b.slug}`} class="card card-hover flex items-center gap-3 p-4">
+            <span class="h-9 w-9 shrink-0 rounded-lg text-center text-[13px] leading-9 font-bold text-white" style={`background:${b.color}`}>
+              {b.en.slice(0, 2).toUpperCase()}
+            </span>
+            <span class="min-w-0">
+              <span class="block truncate text-[13.5px] font-semibold text-ink-900">{b.name}</span>
+              <span class="block text-[11.5px] text-ink-400">{b.models.length} 个机型 · {b.osName}</span>
+            </span>
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-ink-200 bg-white px-5 py-4">
+      <span class="text-[12.5px] font-semibold text-ink-900">验证状态</span>
+      {
+        Object.values(STATUS_META).map((meta) => (
+          <span class="flex items-center gap-1.5 text-[12px] text-ink-500">
+            <span class:list={['rounded-full px-2 py-0.5 text-[10.5px] font-medium ring-1 ring-inset', meta.tone]}>{meta.label}</span>
+            {meta.desc}
+          </span>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="container-page pb-16">
+    {
+      byBrand.map((brand) => (
+        <div class="mt-12 first:mt-0">
+          <div class="flex flex-wrap items-end justify-between gap-3 border-b border-ink-200 pb-4">
+            <div>
+              <h2 class="text-[21px] font-bold tracking-tight">{brand.name}</h2>
+              <p class="mt-1 text-[13px] text-ink-500">{brand.osName} · {brand.models.length} 个机型条目</p>
+            </div>
+            <a href={`/models/${brand.slug}`} class="text-[13px] font-medium text-brand-600 hover:text-brand-700">
+              {brand.en} 机型库 →
+            </a>
+          </div>
+
+          <div class="mt-5 overflow-x-auto">
+            <table class="w-full min-w-[720px] border-collapse text-[13.5px]">
+              <thead>
+                <tr class="border-b border-ink-200 text-left text-[12px] tracking-wide text-ink-400 uppercase">
+                  <th class="py-2.5 pr-4 font-medium">机型</th>
+                  <th class="py-2.5 pr-4 font-medium">型号代码</th>
+                  <th class="py-2.5 pr-4 font-medium">系统</th>
+                  <th class="py-2.5 pr-4 font-medium">状态</th>
+                  <th class="py-2.5 pr-4 font-medium">脚本</th>
+                  <th class="py-2.5 font-medium">营销渠道</th>
+                </tr>
+              </thead>
+              <tbody>
+                {brand.models.map((m) => (
+                  <tr class="group border-b border-ink-100 hover:bg-ink-50/70">
+                    <td class="py-3 pr-4">
+                      <a href={`/models/${m.brand}/${m.code.toLowerCase()}`} class="font-medium text-ink-900 group-hover:text-brand-700">
+                        {m.name}
+                      </a>
+                    </td>
+                    <td class="py-3 pr-4 font-mono text-[12.5px] text-ink-500">{m.code}</td>
+                    <td class="py-3 pr-4 text-ink-600">{m.os}<span class="block text-[11.5px] text-ink-400">{m.android}</span></td>
+                    <td class="py-3 pr-4">
+                      <span class:list={['rounded-full px-2 py-0.5 text-[10.5px] font-medium ring-1 ring-inset', STATUS_META[m.status].tone]}>
+                        {STATUS_META[m.status].label}
+                      </span>
+                    </td>
+                    <td class="py-3 pr-4">
+                      {m.script ? <span class="text-[12px] font-medium text-emerald-600">有</span> : <span class="text-[12px] text-ink-400">—</span>}
+                    </td>
+                    <td class="py-3 text-[12.5px] text-ink-600">{m.channels ? `${m.channels} 个` : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))
+    }
+  </section>
+
+  <section class="border-t border-ink-200/70 bg-ink-50/50">
+    <div class="container-page py-14">
+      <div class="grid gap-8 lg:grid-cols-12">
+        <div class="lg:col-span-5">
+          <h2 class="text-[24px] font-bold tracking-tight">机型不在列表里？</h2>
+          <p class="mt-3 text-[14px] leading-relaxed text-ink-600">
+            先跑一遍通用只读检测。同一个品牌内，系统设置入口的命名和层级高度一致，
+            多数情况可以参考同系机型清单完成。
+          </p>
+          <div class="mt-6 flex flex-wrap gap-2.5">
+            <a href="/guides/detect" class="btn-primary">只读检测说明</a>
+            <a href="/guides/write-recipe" class="btn-ghost">录一份机型脚本</a>
+          </div>
+        </div>
+        <div class="lg:col-span-7">
+          <div class="divide-y divide-ink-200 rounded-2xl border border-ink-200 bg-white">
+            {
+              faq.map((item) => (
+                <details class="group px-5 py-4">
+                  <summary class="flex cursor-pointer list-none items-start justify-between gap-4 text-[14px] font-semibold text-ink-900 [&::-webkit-details-marker]:hidden">
+                    {item.q}
+                    <span class="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border border-ink-200 text-ink-400 transition-transform group-open:rotate-45">
+                      <svg viewBox="0 0 24 24" class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                    </span>
+                  </summary>
+                  <p class="mt-2.5 text-[13.5px] leading-relaxed text-ink-600">{item.a}</p>
+                </details>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

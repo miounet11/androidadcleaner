@@ -1,0 +1,52 @@
+---
+import Base from '../layouts/Base.astro';
+import { NAV } from '../consts';
+import { BRAND_STATS } from '../data/models';
+---
+
+<Base
+  title="页面不存在"
+  description="这个页面不存在或已移动。可以从机型库、教程或下载页重新开始。"
+  noindex={true}
+>
+  <div class="container-page flex min-h-[62vh] flex-col items-center justify-center py-20 text-center">
+    <p class="font-mono text-[64px] leading-none font-bold text-brand-200">404</p>
+    <h1 class="mt-4 text-[26px] font-bold sm:text-[30px]">这个页面不存在</h1>
+    <p class="mt-3 max-w-md text-[14.5px] leading-relaxed text-ink-500">
+      链接可能已经失效，或者地址输错了一个字符。下面几个入口覆盖了大部分需求。
+    </p>
+
+    <div class="mt-8 flex flex-wrap justify-center gap-2.5">
+      <a href="/" class="btn-primary">回到首页</a>
+      <a href="/models" class="btn-ghost">机型库</a>
+      <a href="/guides" class="btn-ghost">教程</a>
+    </div>
+
+    <div class="mt-14 w-full max-w-2xl border-t border-ink-200 pt-8 text-left">
+      <p class="text-[12px] font-semibold tracking-wider text-ink-400 uppercase">按品牌找机型</p>
+      <div class="mt-3.5 flex flex-wrap gap-2">
+        {
+          BRAND_STATS.map((b) => (
+            <a
+              href={`/models/${b.slug}`}
+              class="rounded-lg border border-ink-200 px-3 py-1.5 text-[13px] font-medium text-ink-600 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
+            >
+              {b.name}
+            </a>
+          ))
+        }
+      </div>
+
+      <p class="mt-7 text-[12px] font-semibold tracking-wider text-ink-400 uppercase">常用页面</p>
+      <div class="mt-3.5 flex flex-wrap gap-x-5 gap-y-2">
+        {
+          NAV.map((n) => (
+            <a href={n.href} class="text-[13.5px] text-ink-500 hover:text-brand-600">
+              {n.label}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  --color-ink-50: #f6f8fa;
+  --color-ink-100: #eceff3;
+  --color-ink-200: #d8dee6;
+  --color-ink-300: #b6c0cc;
+  --color-ink-400: #8b97a6;
+  --color-ink-500: #667180;
+  --color-ink-600: #4b5563;
+  --color-ink-700: #374151;
+  --color-ink-800: #1f2937;
+  --color-ink-900: #111827;
+  --color-ink-950: #0a0f18;
+
+  --color-brand-50: #eef7f6;
+  --color-brand-100: #d3ecea;
+  --color-brand-200: #a8d9d5;
+  --color-brand-300: #74c0bb;
+  --color-brand-400: #45a3a0;
+  --color-brand-500: #2b8785;
+  --color-brand-600: #1f6c6b;
+  --color-brand-700: #1b5657;
+  --color-brand-800: #184547;
+  --color-brand-900: #163a3c;
+
+  --color-accent-400: #f5a524;
+  --color-accent-500: #e08c0b;
+  --color-accent-600: #b96f05;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-white text-ink-800 antialiased;
+    font-feature-settings: "kern" 1;
+  }
+  ::selection {
+    @apply bg-brand-200 text-brand-900;
+  }
+  h1, h2, h3, h4 {
+    @apply font-semibold tracking-tight text-ink-900;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  a {
+    @apply transition-colors;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+  }
+  .prose-cn {
+    @apply text-[15.5px] leading-[1.85] text-ink-700;
+  }
+  .prose-cn h2 {
+    @apply mt-11 mb-3.5 scroll-mt-24 border-l-[3px] border-brand-500 pl-3.5 text-[22px] font-semibold leading-snug;
+  }
+  .prose-cn h3 {
+    @apply mt-8 mb-2.5 scroll-mt-24 text-[17px] font-semibold;
+  }
+  .prose-cn p {
+    @apply my-4;
+  }
+  .prose-cn ul, .prose-cn ol {
+    @apply my-4 space-y-2 pl-5;
+  }
+  .prose-cn ul { @apply list-disc; }
+  .prose-cn ol { @apply list-decimal; }
+  .prose-cn li::marker { @apply text-brand-400; }
+  .prose-cn a {
+    @apply font-medium text-brand-600 underline decoration-brand-200 decoration-2 underline-offset-[3px] hover:decoration-brand-500;
+  }
+  .prose-cn strong { @apply font-semibold text-ink-900; }
+  .prose-cn code {
+    @apply rounded-md bg-ink-100 px-1.5 py-0.5 font-mono text-[13px] text-brand-700;
+  }
+  .prose-cn pre {
+    @apply my-5 overflow-x-auto rounded-xl bg-ink-950 p-4 text-[13px] leading-relaxed text-ink-100;
+  }
+  .prose-cn pre code {
+    @apply bg-transparent p-0 text-ink-100;
+  }
+  .prose-cn blockquote {
+    @apply my-5 rounded-r-lg border-l-[3px] border-accent-400 bg-accent-400/8 py-2.5 pr-4 pl-4 text-ink-600;
+  }
+  .prose-cn blockquote p { @apply my-1.5; }
+  .prose-cn table {
+    @apply my-5 w-full border-collapse overflow-hidden rounded-lg text-[14px];
+  }
+  .prose-cn thead { @apply bg-ink-50; }
+  .prose-cn th {
+    @apply border-b border-ink-200 px-3.5 py-2.5 text-left font-semibold text-ink-900;
+  }
+  .prose-cn td { @apply border-b border-ink-100 px-3.5 py-2.5 align-top; }
+  .prose-cn hr { @apply my-9 border-ink-200; }
+
+  .btn,
+  .btn-primary,
+  .btn-ghost,
+  .btn-dark {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-[14px] font-semibold transition-all;
+  }
+  .btn-primary {
+    @apply bg-brand-600 text-white shadow-sm hover:bg-brand-700 hover:shadow-md active:scale-[.985];
+  }
+  .btn-ghost {
+    @apply border border-ink-200 bg-white text-ink-700 hover:border-ink-300 hover:bg-ink-50;
+  }
+  .btn-dark {
+    @apply bg-ink-900 text-white hover:bg-ink-800;
+  }
+
+  .card {
+    @apply rounded-2xl border border-ink-200/80 bg-white transition-all;
+  }
+  .card-hover {
+    @apply hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-[0_12px_32px_-14px_rgba(31,108,107,.32)];
+  }
+
+  .tag,
+  .tag-brand,
+  .tag-warn,
+  .tag-neutral {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11.5px] font-medium;
+  }
+  .tag-brand { @apply bg-brand-50 text-brand-700; }
+  .tag-warn { @apply bg-amber-50 text-amber-700; }
+  .tag-neutral { @apply bg-ink-100 text-ink-600; }
+
+  .kbd {
+    @apply rounded border border-ink-300 border-b-2 bg-ink-50 px-1.5 py-0.5 font-mono text-[11.5px] text-ink-700;
+  }
+}
+
+@utility grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(31, 108, 107, .055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(31, 108, 107, .055) 1px, transparent 1px);
+  background-size: 44px 44px;
+}

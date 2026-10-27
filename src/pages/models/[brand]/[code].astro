@@ -1,0 +1,342 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { MODELS, STATUS_META, getBrand, getModelsByBrand } from '../../../data/models';
+import { MODEL_DETAILS } from '../../../data/model-detail';
+import { breadcrumb, deviceItemList, faqPage, howTo, modelPage } from '../../../lib/schema';
+import { SITE } from '../../../consts';
+
+export function getStaticPaths() {
+  return MODELS.map((model) => ({
+    params: { brand: model.brand, code: model.code.toLowerCase() },
+    props: { model },
+  }));
+}
+
+const { model } = Astro.props;
+const brand = getBrand(model.brand)!;
+const siblings = getModelsByBrand(model.brand).filter((m) => m.code !== model.code);
+const meta = STATUS_META[model.status];
+const detail = MODEL_DETAILS[model.code];
+const compareModel = detail?.compare
+  ? MODELS.find((m) => m.code === detail.compare!.code)
+  : undefined;
+const url = `/models/${model.brand}/${model.code.toLowerCase()}`;
+
+const crumb = breadcrumb([
+  { name: '首页', url: '/' },
+  { name: '机型库', url: '/models' },
+  { name: brand.name, url: `/models/${brand.slug}` },
+  { name: model.name, url },
+]);
+
+const steps = [
+  { name: '开启开发者选项', text: `在 ${model.name} 上打开「设置 → 关于手机」，连续点击版本号 7 次，回到设置进入「开发者选项」，打开 USB 调试。` },
+  { name: '连接电脑并授权', text: '用数据线连接电脑，手机弹出「允许 USB 调试」时勾选「一律允许」并确定。' },
+  { name: '只读检测', text: '运行 check 只读检测，确认型号、系统版本与机型脚本匹配情况，这一步不改动任何设置。' },
+  { name: '备份当前状态', text: '运行 backup 生成改动前快照，包含通知渠道与开关状态，出问题可据此还原。' },
+  { name: '执行机型脚本', text: model.script ? '运行 recipe 执行该机型的自动步骤，脚本找不到的入口会跳过，不会乱点。' : '该机型暂无专用脚本，按同品牌手动清单逐项关闭；建议借用同系脚本安全模式。' },
+  { name: '回读与收尾', text: '关键开关执行后回读确认，最后关闭开发者选项，断开数据线。' },
+];
+
+const faqItems = [
+  ...(detail?.faq ?? []),
+  {
+    q: `${model.name} 去广告需要 root 吗？`,
+    a: '不需要。工具通过 adb 调用 Android 与厂商 App 公开的设置项，不刷机、不解锁 Bootloader、不卸载系统应用。',
+  },
+  {
+    q: `${model.name} 的机型脚本能自动跑吗？`,
+    a: model.script
+      ? `该机型已有专用机型脚本（${model.os}）。${meta.desc}`
+      : `该机型目前没有专用脚本。${meta.desc}可以按 ${brand.name} 手动清单操作，或使用同系脚本的安全模式。`,
+  },
+  {
+    q: '改完还能还原吗？',
+    a: '可以。挂起的广告包和通知渠道各一条命令还原；App 内的开关按清单路径原路打开。执行前的 backup 快照保留完整记录。',
+  },
+  {
+    q: '系统更新后要重做吗？',
+    a: '大版本更新可能重置部分开关或改变入口位置。建议更新后重新跑一次只读检测，版本号对不上时引擎会进入安全模式。',
+  },
+];
+
+const structured = [
+  crumb,
+  modelPage(model, brand.name),
+  faqPage(faqItems),
+  howTo(
+    `${model.name}（${model.code}）去广告完整步骤`,
+    `在 ${model.name} 上通过 adb 关闭系统广告、热搜资讯与营销推送的完整流程。`,
+    steps,
+  ),
+  deviceItemList([model], url),
+];
+
+const downloadUrl = `${SITE.releases}/tag/v${SITE.latestVersion}`;
+---
+
+<Base
+  title={`${model.name}（${model.code}）去广告教程 — ${model.os}`}
+  description={`${model.name}（${model.code}，${model.os} / ${model.android}）去广告设置路径与脚本状态：${model.note}`}
+  keywords={[`${model.name} 去广告`, `${model.code} 关闭广告`, `${brand.en} ${model.os} 广告关闭`, `${model.name} 广告怎么关`]}
+  jsonLd={structured}
+>
+  <section class="border-b border-ink-200/70 bg-ink-50/50">
+    <div class="container-page py-10 md:py-14">
+      <nav aria-label="面包屑" class="text-[12.5px] text-ink-400">
+        <a href="/" class="hover:text-brand-600">首页</a>
+        <span class="mx-2">/</span>
+        <a href="/models" class="hover:text-brand-600">机型库</a>
+        <span class="mx-2">/</span>
+        <a href={`/models/${brand.slug}`} class="hover:text-brand-600">{brand.name}</a>
+        <span class="mx-2">/</span>
+        <span class="text-ink-700">{model.name}</span>
+      </nav>
+
+      <div class="mt-5 flex flex-wrap items-center gap-3">
+        <span class:list={['rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 ring-inset', meta.tone]}>
+          {meta.label}
+        </span>
+        {model.script && <span class="tag-brand">专用机型脚本</span>}
+        {model.channels && <span class="tag-neutral">{model.channels} 个营销渠道</span>}
+      </div>
+
+      <h1 class="mt-4 text-[28px] leading-tight font-bold tracking-tight sm:text-[38px]">
+        {model.name} 去广告
+      </h1>
+      <p class="mt-2 font-mono text-[13px] text-ink-500">{model.code}</p>
+      <p class="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-600">{model.note}</p>
+
+      <dl class="mt-8 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
+        {
+          [
+            ['系统', model.os],
+            ['Android', model.android],
+            ['验证日期', model.testedAt ?? '待补'],
+            ['品牌', brand.en],
+          ].map(([k, v]) => (
+            <div class="rounded-xl border border-ink-200 bg-white px-4 py-3">
+              <dt class="text-[11px] font-medium text-ink-400">{k}</dt>
+              <dd class="mt-0.5 text-[13.5px] font-semibold text-ink-900">{v}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <div class="mt-7 flex flex-wrap gap-2.5">
+        <a href="/download" class="btn-primary">下载客户端</a>
+        <a href={`/models/${brand.slug}#${model.code}`} class="btn-ghost">同品牌机型</a>
+        <a href={downloadUrl} target="_blank" rel="noopener" class="btn-ghost">
+          源码 v{SITE.latestVersion}
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="container-page grid gap-12 py-12 lg:grid-cols-12">
+    <div class="lg:col-span-8">
+      {
+        detail && (
+          <section>
+            <h2 class="text-[22px] font-bold tracking-tight">
+              {model.name} 与同品牌通用流程的差异
+            </h2>
+            <div class="mt-4 space-y-3.5 rounded-2xl border border-ink-200 bg-white p-5">
+              {detail.variance.map((p) => (
+                <p class="text-[14px] leading-relaxed text-ink-600">{p}</p>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      <section class={detail ? 'mt-12' : ''}>
+        <h2 class="text-[22px] font-bold tracking-tight">这个机型的验证范围</h2>
+        <div class="mt-4 rounded-2xl border border-ink-200 bg-white p-5">
+          <p class="text-[14px] leading-relaxed text-ink-600">{meta.desc}</p>
+          <ul class="mt-4 space-y-2.5">
+            {
+              model.highlights.map((h) => (
+                <li class="flex gap-2.5 text-[13.5px] text-ink-700">
+                  <svg viewBox="0 0 24 24" class="mt-0.5 h-4 w-4 shrink-0 text-brand-600" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  {h}
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <section class="mt-12">
+        <h2 class="text-[22px] font-bold tracking-tight">完整操作步骤</h2>
+        <ol class="mt-5 space-y-4">
+          {
+            steps.map((s, i) => (
+              <li class="flex gap-4">
+                <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-600 text-[12px] font-bold text-white">
+                  {i + 1}
+                </span>
+                <div class="min-w-0">
+                  <h3 class="text-[14.5px] font-semibold text-ink-900">{s.name}</h3>
+                  <p class="mt-1 text-[13.5px] leading-relaxed text-ink-600">{s.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+
+        <div class="mt-6 overflow-x-auto rounded-xl bg-ink-900 p-5 text-[12.5px] leading-relaxed text-ink-100">
+          <pre class="font-mono"><code>{`pip3 install -r requirements.txt
+python3 tool/run.py -s <序列号> check     # 只读检测
+python3 tool/run.py -s <序列号> backup    # 改动前快照
+python3 tool/run.py -s <序列号> recipe    # 执行机型脚本
+python3 tool/run.py -s <序列号> finish    # 收尾`}</code></pre>
+        </div>
+      </section>
+
+      {
+        detail?.checklist?.length ? (
+          <section class="mt-12">
+            <h2 class="text-[22px] font-bold tracking-tight">
+              {model.name} 需要额外确认的项
+            </h2>
+            <p class="mt-2 text-[14px] leading-relaxed text-ink-600">
+              通用六步之外，这台机器还要单独确认下面几项。
+            </p>
+            <div class="mt-5 space-y-3">
+              {detail.checklist.map((c) => (
+                <div class="rounded-xl border border-ink-200 bg-white p-4">
+                  <h3 class="text-[14px] font-semibold text-ink-900">{c.title}</h3>
+                  <p class="mt-1.5 text-[13.5px] leading-relaxed text-ink-600">{c.detail}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null
+      }
+
+      {
+        detail?.pitfalls?.length ? (
+          <section class="mt-12">
+            <h2 class="text-[22px] font-bold tracking-tight">这台机器上容易踩的坑</h2>
+            <ul class="mt-4 space-y-2.5 rounded-2xl border border-amber-200 bg-amber-50/50 p-5">
+              {detail.pitfalls.map((p) => (
+                <li class="flex gap-2.5 text-[13.5px] leading-relaxed text-ink-700">
+                  <svg viewBox="0 0 24 24" class="mt-0.5 h-4 w-4 shrink-0 text-amber-600" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 9v4M12 17h.01" />
+                    <path d="M10.3 3.9 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+                  </svg>
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null
+      }
+
+      {
+        compareModel && detail?.compare ? (
+          <section class="mt-12">
+            <h2 class="text-[22px] font-bold tracking-tight">和相近机型怎么选</h2>
+            <a
+              href={`/models/${compareModel.brand}/${compareModel.code.toLowerCase()}`}
+              class="mt-4 flex items-center justify-between gap-4 rounded-2xl border border-ink-200 bg-white p-5 transition-colors hover:border-brand-300 hover:bg-brand-50/40"
+            >
+              <span class="min-w-0">
+                <span class="block text-[14.5px] font-semibold text-ink-900">{compareModel.name}</span>
+                <span class="mt-1 block text-[13px] leading-relaxed text-ink-600">{detail.compare.note}</span>
+              </span>
+              <svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0 text-ink-400" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </a>
+          </section>
+        ) : null
+      }
+
+      <section class="mt-12">
+        <h2 class="text-[22px] font-bold tracking-tight">{brand.osName} 的广告入口</h2>
+        <p class="mt-2 text-[14px] leading-relaxed text-ink-600">
+          同一个品牌内入口结构一致，下面是 {brand.name} 的广告出现位置与处理方式。
+        </p>
+        <div class="mt-5 divide-y divide-ink-200 rounded-2xl border border-ink-200 bg-white">
+          {
+            brand.adSurfaces.map((s) => (
+              <div class="px-5 py-4">
+                <h3 class="text-[13.5px] font-semibold text-ink-900">{s.name}</h3>
+                <p class="mt-1.5 font-mono text-[12px] text-ink-500">{s.path}</p>
+                <p class="mt-1 text-[12.5px] text-ink-600">{s.action}</p>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="mt-12">
+        <h2 class="text-[22px] font-bold tracking-tight">常见问题</h2>
+        <div class="mt-4 divide-y divide-ink-200 rounded-2xl border border-ink-200 bg-white">
+          {
+            faqItems.map((item) => (
+              <details class="group px-5 py-4">
+                <summary class="flex cursor-pointer list-none items-start justify-between gap-4 text-[14px] font-semibold text-ink-900 [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <span class="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border border-ink-200 text-ink-400 transition-transform group-open:rotate-45">
+                    <svg viewBox="0 0 24 24" class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                  </span>
+                </summary>
+                <p class="mt-2.5 text-[13.5px] leading-relaxed text-ink-600">{item.a}</p>
+              </details>
+            ))
+          }
+        </div>
+      </section>
+    </div>
+
+    <aside class="lg:col-span-4">
+      <div class="sticky top-24 space-y-4">
+        <div class="rounded-2xl border border-ink-200 bg-white p-5">
+          <h2 class="text-[14px] font-semibold text-ink-900">同品牌机型</h2>
+          <ul class="mt-3 space-y-2">
+            {
+              siblings.slice(0, 8).map((m) => (
+                <li>
+                  <a href={`/models/${m.brand}/${m.code.toLowerCase()}`} class="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-[13px] text-ink-600 hover:bg-ink-50 hover:text-brand-700">
+                    <span class="truncate">{m.name}</span>
+                    <span class:list={['shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset', STATUS_META[m.status].tone]}>
+                      {STATUS_META[m.status].short}
+                    </span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+          <a href={`/models/${brand.slug}`} class="mt-3 inline-block text-[12.5px] font-medium text-brand-600 hover:text-brand-700">
+            查看全部 {brand.name} 机型 →
+          </a>
+        </div>
+
+        <div class="rounded-2xl border border-brand-200 bg-brand-50/60 p-5">
+          <h2 class="text-[14px] font-semibold text-ink-900">没有专用脚本？</h2>
+          <p class="mt-1.5 text-[12.5px] leading-relaxed text-ink-600">
+            用安全模式执行通用检测，或用同品牌清单手动操作。也可以录一份脚本提交给社区。
+          </p>
+          <a href="/guides/write-recipe" class="mt-3 inline-block text-[12.5px] font-semibold text-brand-700 hover:text-brand-800">
+            如何写机型脚本 →
+          </a>
+        </div>
+
+        <div class="rounded-2xl border border-ink-200 bg-white p-5">
+          <h2 class="text-[14px] font-semibold text-ink-900">相关教程</h2>
+          <ul class="mt-3 space-y-2 text-[13px]">
+            <li><a href="/guides/developer-mode" class="text-ink-600 hover:text-brand-600">开启开发者选项与 USB 调试</a></li>
+            <li><a href="/guides/manual-checklist" class="text-ink-600 hover:text-brand-600">手动清单怎么用</a></li>
+            <li><a href="/guides/restore" class="text-ink-600 hover:text-brand-600">如何还原全部改动</a></li>
+            <li><a href="/guides/troubleshooting" class="text-ink-600 hover:text-brand-600">读屏失败排查</a></li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+</Base>

@@ -1,0 +1,179 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../consts';
+import { BRAND_STATS, SITE_STATS } from '../data/models';
+import { breadcrumb, organization, website } from '../lib/schema';
+
+const url = `${SITE.url}/about`;
+
+const values = [
+  {
+    t: '开关优先，不搞对抗',
+    d: '厂商给了官方开关，就用官方开关。只有在确实没有界面入口时才挂起组件，且选择可逆的 suspend 而不是 uninstall。',
+  },
+  {
+    t: '不确定就不动',
+    d: '渠道名称含糊的不关，图标用途不明的按钮不点，构建号对不上就进安全模式。漏关可以再跑一次，关错可能收不到付款提醒。',
+  },
+  {
+    t: '路径必须能核对',
+    d: '每一条清单都写到具体的层级，不写「在设置里找一下」。机型标注状态：实测、路径实测、待验证、同系参考，不夸大覆盖范围。',
+  },
+  {
+    t: '用户自己的设备',
+    d: '不替你同意协议、不替你决定删什么、不联线上报。工具只在你的指令下动作，日志留在本地。',
+  },
+];
+
+const notAffiliated = [
+  '小米 / Redmi / POCO、OPPO / 一加、vivo / iQOO、荣耀、华为、三星、realme',
+  'Google、Android 及 AOSP 项目',
+];
+---
+
+<Base
+  title="关于项目与免责说明"
+  description="安卓去广告工具的开源项目说明：设计原则、内容标注标准、与各手机厂商无隶属关系的免责声明，以及如何参与贡献。"
+  keywords={['Android Ad Cleaner 关于', '开源去广告工具', '项目说明']}
+  jsonLd={[
+    organization,
+    website,
+    breadcrumb([
+      { name: '首页', url: SITE.url + '/' },
+      { name: '关于', url },
+    ]),
+  ]}
+>
+  <section class="border-b border-ink-100 bg-gradient-to-b from-brand-50/40 to-white">
+    <div class="container-page py-14 sm:py-16">
+      <div class="max-w-3xl">
+        <p class="tag-brand">关于</p>
+        <h1 class="mt-4 text-[32px] leading-tight font-bold sm:text-[40px]">
+          一个把开关拨对的小工具
+        </h1>
+        <p class="mt-4 text-[15.5px] leading-relaxed text-ink-600">
+          国产安卓系统的广告问题不是没有解法，而是解法散落在七八个入口、每家厂商各不相同。
+          这个项目做的事就是把这些路径整理清楚，并且能自动执行。它不是一个对抗系统的工具，
+          而是一份可以被执行的说明书。
+        </p>
+      </div>
+
+      <dl class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {
+          [
+            { k: '开源协议', v: SITE.license },
+            { k: '覆盖品牌', v: SITE_STATS.brands },
+            { k: '机型条目', v: SITE_STATS.models },
+            { k: '真机实测', v: SITE_STATS.verified },
+          ].map((s) => (
+            <div class="card px-4 py-4">
+              <dt class="text-[12px] font-medium text-ink-500">{s.k}</dt>
+              <dd class="mt-1 text-[20px] font-bold text-brand-600">{s.v}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <section class="container-page py-14">
+    <h2 class="text-[24px] font-bold">四条设计原则</h2>
+    <div class="mt-8 grid gap-5 md:grid-cols-2">
+      {
+        values.map((v) => (
+          <div class="card p-6">
+            <h3 class="text-[16px] font-semibold text-ink-900">{v.t}</h3>
+            <p class="mt-2.5 text-[14px] leading-relaxed text-ink-500">{v.d}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="border-y border-ink-100 bg-ink-50/50 py-14">
+    <div class="container-page">
+      <h2 class="text-[24px] font-bold">机型状态怎么读</h2>
+      <p class="mt-2 text-[14.5px] text-ink-500">我们不把「同系参考」写成「支持」，也不把社区反馈写成实测。</p>
+      <div class="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          [
+            { n: '实测通过', d: '在真实设备上完整跑通机型脚本，关键开关已回读确认。' },
+            { n: '路径实测', d: '设置路径已在真机上逐项核对，自动化整段执行仍待复测。' },
+            { n: '待验证', d: '脚本或清单已补充，等待对应机型的真实设备验证。' },
+            { n: '同系参考', d: '与本品牌已实测机型同系统底包，入口结构相近，按同系清单操作。' },
+          ].map((s) => (
+            <div class="card p-5">
+              <h3 class="text-[14.5px] font-semibold">{s.n}</h3>
+              <p class="mt-2 text-[13px] leading-relaxed text-ink-500">{s.d}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          BRAND_STATS.map((b) => (
+            <a href={`/models/${b.slug}`} class="card card-hover flex items-center justify-between px-4 py-3">
+              <span class="text-[13.5px] font-medium text-ink-800">{b.name}</span>
+              <span class="text-[12px] tabular-nums text-ink-400">{b.total} 机型</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-14">
+    <h2 class="text-[24px] font-bold">免责说明</h2>
+    <div class="mt-6 space-y-4 rounded-2xl border border-ink-200 p-6">
+      <p class="text-[14px] leading-[1.85] text-ink-600">
+        本站与以下厂商、项目<b class="font-semibold text-ink-900">无任何隶属、授权或合作关系</b>：
+      </p>
+      <ul class="flex flex-wrap gap-2">
+        {notAffiliated.map((n) => <li class="tag-neutral">{n}</li>)}
+      </ul>
+      <p class="text-[14px] leading-[1.85] text-ink-600">
+        所有厂商名称、系统名称、应用名称均为其各自所有者的商标，本站仅在描述兼容性时使用。
+      </p>
+      <p class="text-[14px] leading-[1.85] text-ink-600">
+        各厂商的系统界面会随版本更新变化。本站记录的设置路径基于标注的系统版本，
+        在你设备上的具体位置可能不同。执行结果以你的手机实际显示为准。
+      </p>
+      <p class="text-[14px] leading-[1.85] text-ink-600">
+        工具按「现状」提供，不附带任何形式的担保。使用前请自行备份。因使用本工具造成的
+        设备异常、数据丢失或其它损失，由使用者自行承担。
+      </p>
+      <p class="text-[14px] leading-[1.85] text-ink-600">
+        如果你的设备由企业或学校统一管理（MDM），请遵守所在组织的设备使用规定。
+      </p>
+    </div>
+  </section>
+
+  <section class="border-t border-ink-100 py-14">
+    <div class="container-page">
+      <div class="grid gap-10 md:grid-cols-3">
+        <div>
+          <h2 class="text-[16px] font-semibold">参与贡献</h2>
+          <p class="mt-2 text-[13.5px] leading-relaxed text-ink-500">
+            新机型脚本、路径纠错、文档改进都欢迎。
+          </p>
+          <a href="/guides/write-recipe" class="mt-3 inline-flex text-[13.5px] font-semibold text-brand-600 hover:text-brand-700">写机型脚本 →</a>
+        </div>
+        <div>
+          <h2 class="text-[16px] font-semibold">反馈问题</h2>
+          <p class="mt-2 text-[13.5px] leading-relaxed text-ink-500">
+            附上构建号和完整诊断，通常一次往返即可定位。
+          </p>
+          <a href="/guides/report-issue" class="mt-3 inline-flex text-[13.5px] font-semibold text-brand-600 hover:text-brand-700">反馈模板 →</a>
+        </div>
+        <div>
+          <h2 class="text-[16px] font-semibold">源码与许可</h2>
+          <p class="mt-2 text-[13.5px] leading-relaxed text-ink-500">
+            MIT 协议，可自由使用与修改。
+          </p>
+          <a href={SITE.repo} target="_blank" rel="noopener" class="mt-3 inline-flex text-[13.5px] font-semibold text-brand-600 hover:text-brand-700">GitHub 仓库 →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

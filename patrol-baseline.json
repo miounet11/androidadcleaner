@@ -1,0 +1,19 @@
+{
+  "pages": 67,
+  "htmlBytes": {
+    "max": 68158,
+    "file": "models/index.html"
+  },
+  "similarity": {
+    "floor": 0.6,
+    "pairs": 366
+  },
+  "sitemap": {
+    "urls": 67,
+    "missing": 0
+  },
+  "jsonld": {
+    "coverage": 1
+  },
+  "pendingTodo": 31
+}

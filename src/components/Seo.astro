@@ -1,0 +1,92 @@
+---
+import { SITE } from '../consts';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  path?: string;
+  type?: 'website' | 'article' | 'product';
+  image?: string;
+  noindex?: boolean;
+  keywords?: string[];
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  publishedTime?: string;
+  modifiedTime?: string;
+}
+
+const {
+  title,
+  description = SITE.description,
+  path = Astro.url.pathname,
+  type = 'website',
+  image = '/og-default.png',
+  noindex = false,
+  keywords = [],
+  jsonLd,
+  publishedTime,
+  modifiedTime,
+} = Astro.props;
+
+const fullTitle = title
+  ? `${title} · ${SITE.name}`
+  : `${SITE.name} — ${SITE.tagline}`;
+const canonical = new URL(path, SITE.url).href;
+const ogImage = new URL(image, SITE.url).href;
+
+const baseKeywords = [
+  '安卓去广告',
+  '安卓关闭广告',
+  '手机系统广告',
+  'adb 去广告',
+  'HyperOS 去广告',
+  'ColorOS 关闭广告',
+  'OriginOS 关闭广告',
+  'MagicOS 去广告',
+  '不 root 去广告',
+  '国产手机广告清理',
+];
+
+const finalKeywords = [...new Set([...keywords, ...baseKeywords])].join(',');
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<meta name="keywords" content={finalKeywords} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex,nofollow" />}
+{!noindex && <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />}
+
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="zh_CN" />
+{publishedTime && <meta property="article:published_time" content={publishedTime} />}
+{modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+
+<link rel="alternate" hreflang="zh-CN" href={canonical} />
+<link rel="alternate" hreflang="x-default" href={canonical} />
+
+<meta name="author" content={SITE.name} />
+<meta name="theme-color" content="#1f6c6b" />
+<meta name="format-detection" content="telephone=no" />
+
+{
+  jsonLd && (
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(
+        Array.isArray(jsonLd) ? jsonLd : [jsonLd],
+      )}
+    />
+  )
+}

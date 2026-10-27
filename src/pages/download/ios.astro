@@ -1,0 +1,230 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../consts';
+import { breadcrumb, faqPage, softwareApp } from '../../lib/schema';
+
+const url = `${SITE.url}/download/ios`;
+
+const faqs = [
+  {
+    q: 'iOS 版能直接关掉安卓手机的广告吗？',
+    a: '不能。iOS 沙盒不允许访问其它设备，App Store 也不允许通过 USB 控制外部设备。iOS 版做的是另一件事：查询机型对应的开关路径、进度记录、脚本更新通知和社区讨论。',
+  },
+  {
+    q: '那 iOS 版有什么用？',
+    a: '它是「随身手册 + 设备档案」。你在手机上就能查到手上这台机型该关哪几项、每项在哪一层设置里；执行时对着屏幕一步步点，进度可以自动保存。同时接收机型脚本更新通知。',
+  },
+  {
+    q: 'iPhone 上有办法给安卓机去广告吗？',
+    a: '没有可靠方式。iOS 无法向安卓设备发起 adb 连接，也拿不到 USB 调试通道。真要连电脑，请用 PC 客户端。',
+  },
+  {
+    q: 'iOS 版收费吗？',
+    a: '免费，无内购。App 本身不含广告，不含统计 SDK。',
+  },
+  {
+    q: '什么时候上架？',
+    a: `当前版本 v${SITE.latestVersion} 处于 TestFlight 阶段。正式版上架后会在此页面更新下载入口，也可以先加入测试。`,
+  },
+];
+
+const features = [
+  {
+    t: '机型开关速查',
+    d: '按品牌、型号、系统版本检索，直接给出每一层设置路径，附截图位置说明。',
+  },
+  {
+    t: '逐项打勾进度',
+    d: '关一项勾一项，中途退出再打开会回到上次位置。适合慢慢来，不用一次点完。',
+  },
+  {
+    t: '脚本更新提醒',
+    d: '你的机型有新脚本或系统大版本变化时推送提醒，不必自己盯仓库。',
+  },
+  {
+    t: '备份记录',
+    d: '手动记录改动前的开关状态，需要还原时照着改回去。',
+  },
+  {
+    t: '社区实测',
+    d: '同一机型的其他人做完了哪些项、跳过了哪些、遇到了什么问题。',
+  },
+  {
+    t: '完全离线可用',
+    d: '机型库随 App 打包，无网也能查。可选开启更新检查。',
+  },
+];
+
+const limits = [
+  { icon: '×', t: '不能连 adb', d: 'iOS 无法建立到安卓设备的调试通道，这是系统限制。' },
+  { icon: '×', t: '不能自动点击', d: 'iOS 不允许 App 操作其它设备的界面。' },
+  { icon: '×', t: '不能挂起系统包', d: 'pm suspend 需要 adb 通道。' },
+];
+---
+
+<Base
+  title="iOS 客户端 — 机型手册与进度记录"
+  description="安卓去广告 iOS 客户端：随身查询各品牌机型广告开关路径、记录操作进度、接收脚本更新。注意 iOS 无法连接 adb，自动执行请在 PC 客户端完成。"
+  keywords={['安卓去广告 iOS', 'iPhone 关闭安卓广告', '机型手册 App', '安卓开关速查']}
+  jsonLd={[
+    softwareApp,
+    breadcrumb([
+      { name: '首页', url: SITE.url + '/' },
+      { name: '下载', url: SITE.url + '/download' },
+      { name: 'iOS 客户端', url },
+    ]),
+    faqPage(faqs.map((f) => ({ q: f.q, a: f.a }))),
+  ]}
+  type="product"
+>
+  <section class="border-b border-ink-200 bg-gradient-to-b from-brand-50/60 to-white">
+    <div class="container-page py-14 md:py-20">
+      <nav aria-label="面包屑" class="mb-6 flex items-center gap-2 text-[12.5px] text-ink-400">
+        <a href="/" class="hover:text-brand-600">首页</a>
+        <span>/</span>
+        <a href="/download" class="hover:text-brand-600">下载</a>
+        <span>/</span>
+        <span class="text-ink-600">iOS 客户端</span>
+      </nav>
+
+      <div class="grid items-center gap-10 md:grid-cols-2">
+        <div>
+          <span class="tag-warn">TestFlight 测试中</span>
+          <h1 class="mt-4 text-[32px] leading-tight font-bold tracking-tight text-ink-900 md:text-[42px]">
+            把机型手册装进口袋
+          </h1>
+          <p class="mt-4 text-[15.5px] leading-relaxed text-ink-600">
+            iOS 版不是遥控器。它是你给家里老人的手机、朋友的手机、自己备用机做清理时的随身清单 —— 查得到、记得住、不会漏项。
+          </p>
+
+          <div class="mt-7 flex flex-wrap gap-3">
+            <a href={SITE.releases} target="_blank" rel="noopener" class="btn-primary">
+              加入 TestFlight
+            </a>
+            <a href="/models" class="btn-ghost">先看机型库</a>
+          </div>
+        </div>
+
+        <div class="mx-auto w-full max-w-[280px]">
+          <div class="rounded-[2.2rem] border border-ink-300/60 bg-white p-3 shadow-[0_24px_60px_-24px_rgba(17,24,28,.35)]">
+            <div class="overflow-hidden rounded-[1.7rem] bg-ink-50">
+              <div class="bg-brand-600 px-4 py-5 text-white">
+                <p class="text-[10.5px] tracking-wide opacity-80">当前设备</p>
+                <p class="mt-1 text-[15px] font-semibold">Xiaomi 18 Pro Max</p>
+                <p class="mt-0.5 font-mono text-[10.5px] opacity-75">HyperOS · OS4.0</p>
+              </div>
+              <div class="space-y-2 p-3">
+                <div class="flex items-center gap-2.5 rounded-xl bg-white p-3">
+                  <span class="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-600 text-[10px] text-white">✓</span>
+                  <span class="text-[11.5px] text-ink-700">系统广告服务</span>
+                </div>
+                <div class="flex items-center gap-2.5 rounded-xl bg-white p-3">
+                  <span class="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-600 text-[10px] text-white">✓</span>
+                  <span class="text-[11.5px] text-ink-700">应用商店推广位</span>
+                </div>
+                <div class="flex items-center gap-2.5 rounded-xl bg-white p-3">
+                  <span class="h-5 w-5 shrink-0 rounded-full border-2 border-ink-300" />
+                  <span class="text-[11.5px] text-ink-700">负一屏推荐卡片</span>
+                </div>
+                <div class="flex items-center gap-2.5 rounded-xl bg-white p-3">
+                  <span class="h-5 w-5 shrink-0 rounded-full border-2 border-ink-300" />
+                  <span class="text-[11.5px] text-ink-700">全局搜索热榜</span>
+                </div>
+                <p class="pt-1 text-center text-[10.5px] text-ink-400">已记录 2 / 4 项</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-14">
+    <div class="rounded-2xl border-2 border-amber-300 bg-amber-50/80 p-6 md:p-8">
+      <h2 class="text-[18px] font-bold text-amber-900">先明确一件事：iOS 版不能自动执行</h2>
+      <p class="mt-3 text-[13.5px] leading-relaxed text-amber-900/90">
+        苹果的系统限制决定了 iOS App 无法向安卓手机发起 adb 连接、无法模拟点击、无法挂起应用包。任何声称能在 iPhone 上一键给安卓手机去广告的工具都不成立 —— 要么需要越狱，要么在骗你。
+      </p>
+      <div class="mt-5 grid gap-3 sm:grid-cols-3">
+        {
+          limits.map((l) => (
+            <div class="rounded-xl bg-white/80 p-4">
+              <span class="grid h-6 w-6 place-items-center rounded-full bg-amber-200 text-[12px] font-bold text-amber-800">
+                {l.icon}
+              </span>
+              <h3 class="mt-2 text-[13px] font-semibold text-ink-900">{l.t}</h3>
+              <p class="mt-1 text-[12px] leading-relaxed text-ink-600">{l.d}</p>
+            </div>
+          ))
+        }
+      </div>
+      <p class="mt-5 text-[13px] text-amber-900">
+        需要自动执行请用 <a href="/download/pc" class="font-semibold underline underline-offset-2">PC 客户端</a>。
+      </p>
+    </div>
+  </section>
+
+  <section class="border-y border-ink-200 bg-ink-50/40 py-16">
+    <div class="container-page">
+      <h2 class="text-[24px] font-bold tracking-tight text-ink-900">iOS 版真正擅长的</h2>
+      <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          features.map((f) => (
+            <div class="card p-5">
+              <h3 class="text-[14.5px] font-semibold text-ink-900">{f.t}</h3>
+              <p class="mt-2 text-[13px] leading-relaxed text-ink-500">{f.d}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-16">
+    <div class="grid gap-8 md:grid-cols-2">
+      <div>
+        <h2 class="text-[24px] font-bold tracking-tight text-ink-900">该用哪个版本</h2>
+        <div class="mt-6 space-y-3">
+          <div class="card p-5">
+            <h3 class="text-[14.5px] font-semibold text-ink-900">想自动关掉 → PC 客户端</h3>
+            <p class="mt-2 text-[13px] leading-relaxed text-ink-500">
+              连数据线，识别机型，自动拨开关，一键还原。Windows / macOS / Linux。
+            </p>
+            <a href="/download/pc" class="mt-3 inline-block text-[13px] font-medium text-brand-600 hover:underline">去下载 →</a>
+          </div>
+          <div class="card p-5">
+            <h3 class="text-[14.5px] font-semibold text-ink-900">想随身查路径 → iOS 版</h3>
+            <p class="mt-2 text-[13px] leading-relaxed text-ink-500">
+              在手机上检索机型和开关位置，逐项打勾，进度自动保存。
+            </p>
+            <a href={SITE.releases} target="_blank" rel="noopener" class="mt-3 inline-block text-[13px] font-medium text-brand-600 hover:underline">加入测试 →</a>
+          </div>
+          <div class="card p-5">
+            <h3 class="text-[14.5px] font-semibold text-ink-900">有电脑不想装东西 → 命令行</h3>
+            <p class="mt-2 text-[13px] leading-relaxed text-ink-500">
+              一段 Python 脚本，需要系统里已有 adb。适合技术用户。
+            </p>
+            <a href="/download#cli" class="mt-3 inline-block text-[13px] font-medium text-brand-600 hover:underline">查看命令 →</a>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-[24px] font-bold tracking-tight text-ink-900">iOS 版常见问题</h2>
+        <div class="mt-6 divide-y divide-ink-200">
+          {
+            faqs.map((f) => (
+              <details class="group py-4">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-[14px] font-medium text-ink-900">
+                  {f.q}
+                  <span class="shrink-0 text-ink-400 transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p class="mt-3 text-[13px] leading-relaxed text-ink-600">{f.a}</p>
+              </details>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
