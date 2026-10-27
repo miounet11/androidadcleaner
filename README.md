@@ -1,11 +1,23 @@
 # androidadcleaner.com
 
+<img src="./public/og-image.png" alt="Android Ad Cleaner — 安卓去广告" width="100%">
+
 安卓去广告工具的官方网站与工具链仓库。
 
 - 站点：<https://www.androidadcleaner.com>
 - 工具代码与安装包：<https://github.com/miounet11/android-ad-cleaner>
 
 Astro 静态站点，对标驱动之家 / 恩山论坛的内容组织方式：以机型为骨架、以教程为血肉。
+
+## 多语言
+
+`zh-CN` 为完整内容，`en` 覆盖首页、功能页与下载页。
+
+新增语言版本时，在 `src/pages/en/` 下建路由，再到 `src/i18n/config.ts` 的
+`TRANSLATED_PATHS` 加一行即可；导航、语言切换、页面 `hreflang` 与 sitemap 的
+`xhtml:link` 会一并跟上。未翻译的路径不会产出任何备用语言声明——声明一个
+不存在的 URL 比不声明更糟。
+
 
 ## 快速开始
 
